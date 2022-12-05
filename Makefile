@@ -7,10 +7,12 @@
 CPPFLAGS := -Iinclude -Ilib -MMD -MP # C PreProcessor flags
 CXXFLAGS := -std=c++20 -Wall -Werror -pedantic-errors
 
+SERVER := src/ServerSocket.cpp src/Connection.cpp src/twmailer-server.cpp
+
 all: bin server client
 
 server:
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) src/ServerSocket.cpp src/twmailer-server.cpp -o bin/twmailer-server
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(SERVER) -o bin/twmailer-server
 
 client:
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) src/twmailer-client.cpp -o bin/twmailer-client

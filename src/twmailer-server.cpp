@@ -1,3 +1,4 @@
+#include "ServerSocket.hpp"
 #include <arpa/inet.h>
 #include <iostream>
 #include <netdb.h>
@@ -25,37 +26,18 @@ int main(int argc, char *argv[]) {
         return EXIT_FAILURE;
     }
 
+    ServerSocket serverSocket(atoi(argv[1]));
+
     socklen_t clientSize;
-    struct sockaddr_in server_address, client_address;
-    int port = atoi(argv[1]);
-    int s0, s1;
-
-    if ((s0 = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
-        std::cerr << "Error: " << strerror(errno) << std::endl;
-        return EXIT_FAILURE;
-    }
-
-    memset(&server_address, 0, sizeof(server_address));
-    server_address.sin_family = AF_INET;
-    server_address.sin_port = htons(port);
-    server_address.sin_addr.s_addr = INADDR_ANY;
-
-    if (bind(s0, (struct sockaddr *)&server_address, sizeof(server_address)) == -1) {
-        perror("bind error");
-        return EXIT_FAILURE;
-    }
-
-    if (listen(s0, 1) == -1) {
-        perror("listen error");
-        return EXIT_FAILURE;
-    }
+    struct sockaddr_in client_address;
 
     clientSize = sizeof(client_address);
-    if ((s1 = accept(s0, (struct sockaddr *)&client_address, &clientSize)) == -1) {
+    if ((s1 = accept(serverSocket.getServerAddress(),
+                     (struct sockaddr *)&client_address, &clientSize)) == -1) {
         perror("accept error");
     }
 
-    close(s0);
+    close(serverSocket.getServerAddress());
 
     char host[NI_MAXHOST];
     char serv[NI_MAXSERV];

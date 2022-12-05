@@ -20,7 +20,7 @@ static void usage() {
 int main(int argc, char* argv[]) {
     if (argc != 3) {
         usage();
-        exit(1);
+        return EXIT_FAILURE;
     }
 
     socklen_t clientSize;
@@ -30,7 +30,7 @@ int main(int argc, char* argv[]) {
 
     if ((s0 = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
         std::cerr << "Error: " << strerror(errno) << std::endl;
-        exit(1);
+        return EXIT_FAILURE;
     }
 
     memset(&server_address, 0, sizeof(server_address));

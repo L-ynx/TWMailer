@@ -4,7 +4,7 @@
 # @file
 # @version 0.1
 
-all: bin client server
+all: bin server client
 
 server:
 	g++ -Wall src/twmailer-server.cpp -o bin/twmailer-server

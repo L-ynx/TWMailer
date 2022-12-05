@@ -116,6 +116,7 @@ int main(int argc, char *argv[]) {
                     }
                     break;
             case 3: help();     //Why does it print the default line, after exiting this function?
+                    type = 0;
                     break;
             default: std::cout << "Please enter a valid command." << std::endl;
                      break;

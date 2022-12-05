@@ -14,7 +14,7 @@ int s1 = -1;
 void clientCommunication(void *data); void signalHandler(int sig);
 
 static void usage() {
-    std::cout << "Usage Server:\n\t./twmailer-server <port> <mail-spool-directoryname>";
+    std::cout << "Usage Server:\n\t./twmailer-server <port> <mail-spool-directoryname>\n";
 }
 
 int main(int argc, char* argv[]) {

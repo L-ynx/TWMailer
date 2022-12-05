@@ -1,10 +1,10 @@
-#include <iostream>
-#include <sys/types.h>
-#include <unistd.h>
-#include <sys/socket.h>
 #include <arpa/inet.h>
+#include <iostream>
 #include <netdb.h>
 #include <string.h>
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 static void usage() {
     std::cout << "Usage Client:\n\t./twmailer-client <ip> <port>\n";
@@ -17,23 +17,34 @@ static void commands() {
 static void help() {
     char c;
 
-    std::cout << "(S)END: client sends a message to the server.\n(L)IST: lists all messages of a specific user.\n(R)EAD: display a specific message of a specific user.\n(D)EL: removes a specific message.\n(Q)UIT: logout the client.\n";
-    std::cout << "For further information, enter the desired key. Enter any other key to return\n";
-    
+    std::cout << "(S)END: client sends a message to the server.\n(L)IST: lists all "
+                 "messages of a specific user.\n(R)EAD: display a specific message "
+                 "of a specific user.\n(D)EL: removes a specific message.\n(Q)UIT: "
+                 "logout the client.\n";
+    std::cout << "For further information, enter the desired key. Enter any other "
+                 "key to return\n";
+
     while (true) {
         std::cin >> c;
         c = toupper(c);
 
         switch (c) {
-        case 'S': std::cout << "\nSEND\n\t<Sender>\n\t<Receiver>\n\t<Subject (max. 80 chars)>\n\t<message (multi-line; no length restrictions)>\n\t.\n";
+        case 'S':
+            std::cout << "\nSEND\n\t<Sender>\n\t<Receiver>\n\t<Subject (max. 80 "
+                         "chars)>\n\t<message (multi-line; no length "
+                         "restrictions)>\n\t.\n";
             continue;
-        case 'L': std::cout << "\nLIST\n\t<Username>\n";
+        case 'L':
+            std::cout << "\nLIST\n\t<Username>\n";
             continue;
-        case 'R': std::cout << "\nREAD\n\t<Username>\n\t<Message-Number>\n";
+        case 'R':
+            std::cout << "\nREAD\n\t<Username>\n\t<Message-Number>\n";
             continue;
-        case 'D': std::cout << "\nDEL\n\tUsername>\n\t<Message-Number>\n";
+        case 'D':
+            std::cout << "\nDEL\n\tUsername>\n\t<Message-Number>\n";
             continue;
-        case 'Q': std::cout << "\nQUIT\n";
+        case 'Q':
+            std::cout << "\nQUIT\n";
             continue;
         default:
             break;
@@ -71,7 +82,6 @@ int main(int argc, char *argv[]) {
         return EXIT_FAILURE;
     }
 
-
     commands();
     std::string input;
 
@@ -86,7 +96,6 @@ int main(int argc, char *argv[]) {
             getline(std::cin, input);
             data += input;
 
-
             // Here we could possibly use a function pointer
             if (data == "SEND")
                 type = 1;
@@ -95,8 +104,7 @@ int main(int argc, char *argv[]) {
             else if (data == "READ" || data == "DEL") {
                 type = 2;
                 counter = 2;
-            }
-            else if (data == "HELP")
+            } else if (data == "HELP")
                 type = 3;
             else if (data == "QUIT")
                 type = 4;
@@ -104,22 +112,27 @@ int main(int argc, char *argv[]) {
             data += "\n";
 
             switch (type) {
-            case 1: while (input != ".") {
-                        getline(std::cin, input);
-                        data += input + "\n";
-                    }
-                    break;
+            case 1:
+                while (input != ".") {
+                    getline(std::cin, input);
+                    data += input + "\n";
+                }
+                break;
 
-            case 2: for (int i = 0; i < counter; i++) {
-                        getline(std::cin, input);
-                        data += input + "\n";
-                    }
-                    break;
-            case 3: help();     //Why does it print the default line, after exiting this function?
-                    type = 0;
-                    break;
-            default: std::cout << "Please enter a valid command." << std::endl;
-                     break;
+            case 2:
+                for (int i = 0; i < counter; i++) {
+                    getline(std::cin, input);
+                    data += input + "\n";
+                }
+                break;
+            case 3:
+                help(); // Why does it print the default line, after exiting this
+                        // function?
+                type = 0;
+                break;
+            default:
+                std::cout << "Please enter a valid command." << std::endl;
+                break;
             }
         }
 
@@ -133,12 +146,10 @@ int main(int argc, char *argv[]) {
         if (feedback == -1) {
             perror("recv error");
             break;
-        }
-        else if (feedback == 0) {
+        } else if (feedback == 0) {
             printf("Server closed remote socket\n");
             break;
-        }
-        else {
+        } else {
             std::cout << std::string(buffer, feedback) << std::endl;
         }
 

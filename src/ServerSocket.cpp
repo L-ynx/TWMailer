@@ -9,7 +9,7 @@ ServerSocket::ServerSocket(int port) {
 
     struct sockaddr_in server_address;
 
-    if ((this->serverAddress = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
+    if ((this->serverSocket = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
         std::cerr << "Error: " << strerror(errno) << std::endl;
         exit(1);
     }
@@ -19,17 +19,17 @@ ServerSocket::ServerSocket(int port) {
     server_address.sin_port = htons(port);
     server_address.sin_addr.s_addr = INADDR_ANY;
 
-    if (bind(this->serverAddress, (struct sockaddr *)&server_address, sizeof(server_address)) == -1) {
+    if (bind(this->serverSocket, (struct sockaddr *)&server_address, sizeof(server_address)) == -1) {
         perror("bind error");
         exit(1);
     }
 
-    if (listen(this->serverAddress, 1) == -1) {
+    if (listen(this->serverSocket, 1) == -1) {
         perror("listen error");
         exit(1);
     }
 }
 
-int ServerSocket::getServerAddress() {
-    return serverAddress;
+int ServerSocket::getServerSocket() {
+    return serverSocket;
 }

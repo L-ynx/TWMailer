@@ -4,12 +4,12 @@
 class ServerSocket {
   private:
     int port;
-    int serverAddress = -1;
+    int serverSocket = -1;
 
   public:
     ServerSocket(int port);
 
-    int getServerAddress();
+    int getServerSocket();
 };
 
 #endif // SERVER_SOCKET_H_

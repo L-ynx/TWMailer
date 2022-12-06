@@ -1,4 +1,5 @@
 #include "Connection.hpp"
+#include "Server.hpp"
 #include "ServerSocket.hpp"
 #include <iostream>
 #include <signal.h>
@@ -10,12 +11,22 @@ int abortRequested = 0;
 int s0 = -1;
 int s1 = -1;
 
-void clientCommunication(int data);
 void signalHandler(int sig);
 
 static void usage() {
     std::cout
         << "Usage Server:\n\t./twmailer-server <port> <mail-spool-directoryname>\n";
+}
+
+Server::Server(int port) {
+    this->port = port;
+
+    this->serverSocket = new ServerSocket(port);
+    this->connection = new Connection(serverSocket->getServerSocket());
+}
+
+Connection Server::getConnection() {
+    return *this->connection;
 }
 
 int main(int argc, char *argv[]) {
@@ -24,22 +35,19 @@ int main(int argc, char *argv[]) {
         return EXIT_FAILURE;
     }
 
-    ServerSocket serverSocket(atoi(argv[1]));
-    Connection connection(serverSocket.getServerSocket());
-    clientCommunication(connection.getClientSocket());
+    Server server(atoi(argv[1]));
 
+    server.clientCommunication();
     return 0;
 }
 
-void clientCommunication(int data) {
-
+void Server::clientCommunication() {
     char buffer[4096];
     int message;
-    int client = data;
 
     do {
         memset(buffer, 0, 4096);
-        message = recv(client, buffer, 4096, 0);
+        message = recv(*this->connection->getClientSocket(), buffer, 4096, 0);
         if (message == -1) {
             if (abortRequested) {
                 perror("recv error after aborted");
@@ -50,11 +58,11 @@ void clientCommunication(int data) {
         }
         std::cout << std::string(buffer, 0, message) << std::endl;
 
-        send(client, buffer, message + 1, 0);
+        send(*this->connection->getClientSocket(), buffer, message + 1, 0);
 
     } while (strcmp(buffer, "QUIT") != 0 && !abortRequested);
 
-    close(client);
+    close(*this->connection->getClientSocket());
 }
 
 void signalHandler(int sig) {

@@ -35,6 +35,7 @@ void Server::clientCommunication() {
 
     do {
         memset(buffer, 0, 4096);
+        // Receive client message
         message = recv(*this->connection->getClientSocket(), buffer, 4096, 0);
         if (message == -1) {
             if (this->abortRequested) {
@@ -96,8 +97,10 @@ int main(int argc, char *argv[]) {
         return EXIT_FAILURE;
     }
 
+    // Initialize Server
     Server server(atoi(argv[1]), argv[2]);
 
+    // Establish and maintain connection
     while (true) {
         server.connect(new Connection(*server.getSocket()->getSocket()));
         server.clientCommunication();

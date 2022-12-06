@@ -15,11 +15,13 @@ ClientSocket::ClientSocket(int port, char *ipAddress) {
     this->port = port;
 
     struct sockaddr_in server;
+    // Create a new clientsocket
     if ((this->sock = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
         std::cerr << "Error: " << strerror(errno) << std::endl;
         exit(EXIT_FAILURE);
     }
 
+    // Assign address family, port and IP address
     memset(&server, 0, sizeof(server));
     server.sin_family = AF_INET;
     server.sin_port = htons(10001);
@@ -37,6 +39,7 @@ ServerSocket::ServerSocket(int port) {
 
     struct sockaddr_in server_address;
 
+    // Create a new serversocket
     if ((this->sock = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
         std::cerr << "Error: " << strerror(errno) << std::endl;
         exit(EXIT_FAILURE);
@@ -54,17 +57,20 @@ ServerSocket::ServerSocket(int port) {
         exit(EXIT_FAILURE);
     }
 
+    // Assign address family, port and any IP address
     memset(&server_address, 0, sizeof(server_address));
     server_address.sin_family = AF_INET;
     server_address.sin_port = htons(port);
     server_address.sin_addr.s_addr = INADDR_ANY;
 
+    // Bind socket to address
     if (bind(this->sock, (struct sockaddr *)&server_address,
              sizeof(server_address)) == -1) {
         perror("bind error");
         exit(EXIT_FAILURE);
     }
 
+    // Listen for a connection
     if (listen(this->sock, 1) == -1) {
         perror("listen error");
         exit(EXIT_FAILURE);

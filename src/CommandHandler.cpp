@@ -38,9 +38,11 @@ void CommandHandler::parseInput(std::string input) {
 
 void CommandHandler::saveMessage(std::string input) {
     std::stringstream istringstream(input);
+    // Create a directory for the sender
     std::string senderDirectory = this->maildir + "/" + this->sender;
     createDirectory(senderDirectory);
 
+    // Create a new file for each message
     std::ofstream of{senderDirectory + "/" +
                      std::to_string(nextFreeFileNumber(senderDirectory)) + ".msg"};
     if (!of) {
@@ -50,6 +52,7 @@ void CommandHandler::saveMessage(std::string input) {
 
     of << sender << '\n';
 
+    // Write to filelist
     while (istringstream) {
         std::string segment;
         getline(istringstream, segment);
@@ -74,6 +77,7 @@ void CommandHandler::listMessages(std::string input) {
     } else if (numberOfFiles(senderDirectory) == 0) {
         response = "0";
     } else {
+        // Count amount of messages sent by user and get receiver names
         response += std::to_string(numberOfFiles(senderDirectory)) + "\n";
         std::filesystem::path path = senderDirectory;
         for (auto &file : std::filesystem::directory_iterator(path)) {

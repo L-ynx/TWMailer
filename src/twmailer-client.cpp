@@ -34,6 +34,7 @@ int main(int argc, char *argv[]) {
         exit(1);
     }
 
+    // Create a new client
     Client client(atoi(argv[2]), argv[1]);
 
     // Print available commands
@@ -67,6 +68,7 @@ int main(int argc, char *argv[]) {
 
     } while (!isQuit);
 
+    // Close socket
     if (*client.getSocket()->getSocket() != -1) {
         if (shutdown(*client.getSocket()->getSocket(), SHUT_RDWR) == -1) {
             // invalid in case the server is gone already

@@ -17,6 +17,7 @@ Connection::Connection(int serverSocket) {
     struct sockaddr_in client_address;
 
     clientSize = sizeof(client_address);
+    // block until client connects to server
     if ((this->clientSocket = accept(
              serverSocket, (struct sockaddr *)&client_address, &clientSize)) == -1) {
         perror("accept error");
@@ -27,6 +28,7 @@ Connection::Connection(int serverSocket) {
     memset(host, 0, NI_MAXHOST);
     memset(serv, 0, NI_MAXSERV);
 
+    // Print connection info
     int res = getnameinfo((sockaddr *)&client_address, sizeof(client_address), host,
                           NI_MAXHOST, serv, NI_MAXSERV, 0);
     if (res) {

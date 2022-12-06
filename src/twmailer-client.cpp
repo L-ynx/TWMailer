@@ -1,3 +1,4 @@
+#include "Client.hpp"
 #include <arpa/inet.h>
 #include <climits>
 #include <iostream>
@@ -15,9 +16,17 @@ std::string listMsg();
 std::string readOrDelMsg();
 std::string getUserInput();
 
+Client::Client(int port, char *ipAddress) {
+    this->port = port;
+    this->clientSocket = new ClientSocket(port, ipAddress);
+}
+
+ClientSocket *Client::getSocket() {
+    return this->clientSocket;
+}
+
 int main(int argc, char *argv[]) {
-    struct sockaddr_in server;
-    int port, isQuit;
+    int isQuit;
     char buffer[4096];
 
     if (argc != 3) {
@@ -25,26 +34,7 @@ int main(int argc, char *argv[]) {
         exit(1);
     }
 
-    // Create a client socket
-    int sock = socket(AF_INET, SOCK_STREAM, 0);
-    if (sock < 0) {
-        perror("Socket error.");
-        return EXIT_FAILURE;
-    }
-
-    port = atoi(argv[2]);
-
-    // Assign protocol family, port and address of server
-    memset(&server, 0, sizeof(server));
-    server.sin_family = AF_INET;
-    server.sin_port = htons(port);
-    inet_aton(argv[1], &server.sin_addr);
-
-    // Connect to server
-    if (connect(sock, (struct sockaddr *)&server, sizeof(server)) == -1) {
-        perror("Connect error - no server available");
-        return EXIT_FAILURE;
-    }
+    Client client(atoi(argv[2]), argv[1]);
 
     // Print available commands
     commands();
@@ -55,13 +45,14 @@ int main(int argc, char *argv[]) {
         isQuit = strcasecmp(data.c_str(), "QUIT") == 0;
 
         // Send Client input data to server
-        if ((send(sock, data.c_str(), data.size() + 1, 0)) == -1) {
+        if ((send(*client.getSocket()->getSocket(), data.c_str(), data.size() + 1,
+                  0)) == -1) {
             perror("An error occurred while trying to send data to the server.\n");
             continue;
         }
         // Receive answer from server
         memset(buffer, 0, 4096);
-        int feedback = recv(sock, buffer, 4096, 0);
+        int feedback = recv(*client.getSocket()->getSocket(), buffer, 4096, 0);
 
         if (feedback == -1) {
             perror("An error occurred while trying to receive data from the "
@@ -76,15 +67,15 @@ int main(int argc, char *argv[]) {
 
     } while (!isQuit);
 
-    if (sock != -1) {
-        if (shutdown(sock, SHUT_RDWR) == -1) {
+    if (*client.getSocket()->getSocket() != -1) {
+        if (shutdown(*client.getSocket()->getSocket(), SHUT_RDWR) == -1) {
             // invalid in case the server is gone already
-            perror("Shutdown sock");
+            perror("Shutdown *client.getSocket()->getSocket()");
         }
-        if (close(sock) == -1) {
-            perror("Close sock");
+        if (close(*client.getSocket()->getSocket()) == -1) {
+            perror("Close *client.getSocket()->getSocket()");
         }
-        sock = -1;
+        *client.getSocket()->getSocket() = -1;
     }
 
     return EXIT_SUCCESS;
@@ -97,22 +88,23 @@ std::string getUserInput() {
     while (!validCmd) {
         data = "";
         std::cout << "> ";
+        // Get Usercommand and convert to upper case
         getline(std::cin, input);
-        data += input;
+        for (auto &c : input)
+            data += toupper(c);
 
-        if (strcasecmp(data.c_str(), "QUIT") == 0) {
+        if (data == "QUIT") {
             break;
-        } else if (strcasecmp(data.c_str(), "SEND") == 0) {
+        } else if (data == "SEND") {
             data += sendMsg();
             validCmd = true;
-        } else if (strcasecmp(data.c_str(), "LIST") == 0) {
+        } else if (data == "LIST") {
             data += listMsg();
             validCmd = true;
-        } else if (strcasecmp(data.c_str(), "READ") == 0 ||
-                   strcasecmp(data.c_str(), "DEL") == 0) {
+        } else if (data == "READ" || data == "DEL") {
             data += readOrDelMsg();
             validCmd = true;
-        } else if (strcasecmp(data.c_str(), "HELP") == 0) {
+        } else if (data == "HELP") {
             help();
         } else
             continue;

@@ -7,8 +7,8 @@
 CPPFLAGS := -Iinclude -Ilib -MMD -MP # C PreProcessor flags
 CXXFLAGS := -std=c++20 -Wall -Werror -pedantic-errors
 
-SERVER := src/ServerSocket.cpp src/Connection.cpp src/CommandHandler.cpp src/twmailer-server.cpp
-CLIENT := src/twmailer-client.cpp
+SERVER := src/Socket.cpp src/Connection.cpp src/CommandHandler.cpp src/twmailer-server.cpp
+CLIENT := src/Socket.cpp src/twmailer-client.cpp
 
 all: bin server client
 

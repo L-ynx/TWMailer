@@ -2,7 +2,7 @@
 #define SERVER_H_
 #include "CommandHandler.hpp"
 #include "Connection.hpp"
-#include "ServerSocket.hpp"
+#include "Socket.hpp"
 #include <iostream>
 
 class Server {
@@ -22,7 +22,7 @@ class Server {
     void connect(Connection *client);
 
     Connection *getConnection();
-    ServerSocket *getServerSocket();
+    ServerSocket *getSocket();
 
     void clientCommunication();
     void signalHandler(int sig);

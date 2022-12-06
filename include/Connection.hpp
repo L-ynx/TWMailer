@@ -1,6 +1,6 @@
 #ifndef CONNECTION_H_
 #define CONNECTION_H_
-#include "ServerSocket.hpp"
+#include "Socket.hpp"
 
 class Connection {
   private:

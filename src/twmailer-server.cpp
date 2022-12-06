@@ -1,6 +1,6 @@
 #include "Connection.hpp"
 #include "Server.hpp"
-#include "ServerSocket.hpp"
+#include "Socket.hpp"
 #include <iostream>
 #include <signal.h>
 #include <string.h>
@@ -9,9 +9,7 @@
 
 Server::Server(int port, std::string directory) {
     this->port = port;
-
     this->ch = new CommandHandler(directory);
-
     this->serverSocket = new ServerSocket(port);
 }
 
@@ -23,7 +21,7 @@ Connection *Server::getConnection() {
     return this->connection;
 }
 
-ServerSocket *Server::getServerSocket() {
+ServerSocket *Server::getSocket() {
     return this->serverSocket;
 }
 
@@ -55,7 +53,7 @@ void Server::clientCommunication() {
 
 void Server::signalHandler(int sig) {
     if (sig == SIGINT) {
-        printf("abort Requested... ");
+        std::cout << "abort Requested... ";
         this->abortRequested = 1;
 
         if (*this->connection->getClientSocket() != -1) {
@@ -68,14 +66,14 @@ void Server::signalHandler(int sig) {
             *this->connection->getClientSocket() = -1;
         }
 
-        if (*this->serverSocket->getServerSocket() != -1) {
-            if (shutdown(*this->serverSocket->getServerSocket(), SHUT_RDWR) == -1) {
-                perror("shutdown *this->serverSocket->getServerSocket()");
+        if (*this->serverSocket->getSocket() != -1) {
+            if (shutdown(*this->serverSocket->getSocket(), SHUT_RDWR) == -1) {
+                perror("shutdown *this->serverSocket->getSocket()");
             }
-            if (close(*this->serverSocket->getServerSocket()) == -1) {
-                perror("close *this->serverSocket->getServerSocket()");
+            if (close(*this->serverSocket->getSocket()) == -1) {
+                perror("close *this->serverSocket->getSocket()");
             }
-            *this->serverSocket->getServerSocket() = -1;
+            *this->serverSocket->getSocket() = -1;
         }
     } else {
         exit(sig);
@@ -91,9 +89,10 @@ int main(int argc, char *argv[]) {
     Server server(atoi(argv[1]), argv[2]);
 
     while (true) {
-        server.connect(new Connection(*server.getServerSocket()->getServerSocket()));
+        server.connect(new Connection(*server.getSocket()->getSocket()));
         server.clientCommunication();
     }
 
+    close(*server.getSocket()->getSocket());
     return 0;
 }

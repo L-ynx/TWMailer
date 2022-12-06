@@ -10,11 +10,17 @@ class CommandHandler {
 
   public:
     CommandHandler(std::string directory);
+    void createDirectory(std::string directory);
 
     std::string getMailDir();
 
     void parseInput(std::string input);
+    void saveMessage(std::string message);
 
+    int numberOfFiles(std::string directory);
+    int nextFreeFileNumber(std::string directory);
+
+    void setResponse(std::string message);
     char *getResponse();
     int getResponseLength();
 };

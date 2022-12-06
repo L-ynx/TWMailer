@@ -84,6 +84,7 @@ int main(int argc, char *argv[]) {
 // Read User command and message
 std::string getUserInput() {
     bool validCmd = false;
+    bool send = false;
     std::string data, input;
     while (!validCmd) {
         data = "";
@@ -97,6 +98,7 @@ std::string getUserInput() {
             break;
         } else if (data == "SEND") {
             data += sendMsg();
+            send = true;
             validCmd = true;
         } else if (data == "LIST") {
             data += listMsg();
@@ -110,7 +112,9 @@ std::string getUserInput() {
             continue;
 
         // Ignore last newline to empty getline buffer
-        std::cin.ignore(INT_MAX, '\n');
+        if (!send) {
+            std::cin.ignore(INT_MAX, '\n');
+        }
     }
     return data;
 }

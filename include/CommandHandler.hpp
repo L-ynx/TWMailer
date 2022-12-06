@@ -8,6 +8,10 @@ class CommandHandler {
     std::string response;
     int responseLength;
 
+    std::string command;
+    std::string sender;
+    std::string messageNumber;
+
   public:
     CommandHandler(std::string directory);
     void createDirectory(std::string directory);
@@ -19,6 +23,11 @@ class CommandHandler {
     void listMessages(std::string input);
     void readMessage(std::string input);
     void deleteMessage(std::string input);
+
+    std::string readCommand(std::string input);
+    std::string readSender(std::string input);
+    std::string readMessageNumber(std::string input);
+    std::string trim(std::string input);
 
     int numberOfFiles(std::string directory);
     int nextFreeFileNumber(std::string directory);

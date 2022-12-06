@@ -8,6 +8,10 @@
 #include <sys/socket.h>
 #include <unistd.h>
 
+/**
+ * Use the code from the example to set up a connection. Doing it in an
+ * object-oriented way makes the maintenance of the program simpler.
+ * */
 Connection::Connection(int serverSocket) {
     socklen_t clientSize;
     struct sockaddr_in client_address;

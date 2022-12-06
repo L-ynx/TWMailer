@@ -22,27 +22,23 @@ void CommandHandler::createDirectory(std::string directory) {
 }
 
 void CommandHandler::parseInput(std::string input) {
-    std::string segment;
-    std::stringstream istringstream(input);
-    getline(istringstream, segment);
+    input = readCommand(input);
+    input = readSender(input);
 
-    if (segment == "SEND") {
-        saveMessage(input.erase(0, 5));
-    } else if (segment == "LIST") {
-        listMessages(input.erase(0, 5));
-    } else if (segment == "READ") {
-        readMessage(input.erase(0, 5));
-    } else if (segment == "DEL") {
-        deleteMessage(input.erase(0, 4));
+    if (this->command == "SEND") {
+        saveMessage(input);
+    } else if (this->command == "LIST") {
+        listMessages(input);
+    } else if (this->command == "READ") {
+        readMessage(input);
+    } else if (this->command == "DEL") {
+        deleteMessage(input);
     }
 }
 
 void CommandHandler::saveMessage(std::string input) {
     std::stringstream istringstream(input);
-    std::string sender;
-    getline(istringstream, sender);
-
-    std::string senderDirectory = this->maildir + "/" + sender;
+    std::string senderDirectory = this->maildir + "/" + this->sender;
     createDirectory(senderDirectory);
 
     std::ofstream of{senderDirectory + "/" +
@@ -69,10 +65,8 @@ void CommandHandler::saveMessage(std::string input) {
 
 void CommandHandler::listMessages(std::string input) {
     std::stringstream istringstream(input);
-    std::string sender;
-    getline(istringstream, sender);
 
-    std::string senderDirectory = this->maildir + "/" + sender;
+    std::string senderDirectory = this->maildir + "/" + this->sender;
     std::string response;
 
     if (!std::filesystem::exists(senderDirectory)) {
@@ -84,8 +78,7 @@ void CommandHandler::listMessages(std::string input) {
         std::filesystem::path path = senderDirectory;
         for (auto &file : std::filesystem::directory_iterator(path)) {
             std::ifstream is{file.path()};
-            std::string sender, receiver, subject;
-            getline(is, sender);
+            std::string receiver, subject;
             getline(is, receiver);
             getline(is, subject);
             response += subject + "\n";
@@ -96,22 +89,19 @@ void CommandHandler::listMessages(std::string input) {
 }
 
 void CommandHandler::readMessage(std::string input) {
+    input = readMessageNumber(input);
     std::stringstream istringstream(input);
-    std::string sender;
-    getline(istringstream, sender);
-    std::string messageNumber;
-    getline(istringstream, messageNumber);
 
-    std::string senderDirectory = this->maildir + "/" + sender;
-    std::string filename = senderDirectory + "/" + messageNumber + ".msg";
+    std::cout << this->sender << '\n';
+    std::cout << this->messageNumber << '\n';
+
+    std::string senderDirectory = this->maildir + "/" + this->sender;
+    std::string filename = senderDirectory + "/" + this->messageNumber + ".msg";
     std::string response;
 
-    if (!std::filesystem::exists(senderDirectory)) {
-        response = "ERR\n";
-    } else if (numberOfFiles(senderDirectory) == 0) {
-        response = "ERR\n";
-    } else if (!std::filesystem::exists(
-                   std::filesystem::directory_entry(filename))) {
+    if (!std::filesystem::exists(senderDirectory) ||
+        !numberOfFiles(senderDirectory) ||
+        !std::filesystem::exists(std::filesystem::directory_entry(filename))) {
         response = "ERR\n";
     } else {
         response = "OK\n";
@@ -127,28 +117,52 @@ void CommandHandler::readMessage(std::string input) {
 }
 
 void CommandHandler::deleteMessage(std::string input) {
+    input = readMessageNumber(input);
     std::stringstream istringstream(input);
-    std::string sender;
-    getline(istringstream, sender);
-    std::string messageNumber;
-    getline(istringstream, messageNumber);
 
-    std::string senderDirectory = this->maildir + "/" + sender;
+    std::string senderDirectory = this->maildir + "/" + this->sender;
     std::string filename = senderDirectory + "/" + messageNumber + ".msg";
     std::string response;
 
-    if (!std::filesystem::exists(senderDirectory)) {
-        response = "ERR\n";
-    } else if (numberOfFiles(senderDirectory) == 0) {
-        response = "ERR\n";
-    } else if (!std::filesystem::exists(
-                   std::filesystem::directory_entry(filename))) {
+    if (!std::filesystem::exists(senderDirectory) ||
+        !numberOfFiles(senderDirectory) ||
+        !std::filesystem::exists(std::filesystem::directory_entry(filename))) {
         response = "ERR\n";
     } else {
         response = "OK\n";
         std::filesystem::remove(filename);
     }
     setResponse(response);
+}
+
+std::string CommandHandler::readCommand(std::string input) {
+    std::stringstream istringstream(input);
+    getline(istringstream, this->command);
+    return trim(input);
+}
+
+std::string CommandHandler::readSender(std::string input) {
+    std::stringstream istringstream(input);
+    getline(istringstream, this->sender);
+    return trim(input);
+}
+
+std::string CommandHandler::readMessageNumber(std::string input) {
+    std::stringstream istringstream(input);
+    getline(istringstream, this->messageNumber);
+    return trim(input);
+}
+
+std::string CommandHandler::trim(std::string input) {
+    std::string message = "";
+    std::stringstream istringstream(input);
+    getline(istringstream, this->messageNumber);
+    while (istringstream) {
+        std::string line;
+        getline(istringstream, line);
+        message += line + "\n";
+    }
+    return message;
 }
 
 int CommandHandler::numberOfFiles(std::string directory) {

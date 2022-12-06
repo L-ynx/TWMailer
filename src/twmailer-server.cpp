@@ -25,6 +25,10 @@ ServerSocket *Server::getSocket() {
     return this->serverSocket;
 }
 
+/**
+ * Use the code from the example to communicate with the client. Doing it in an
+ * object-oriented way makes the maintenance of the program simpler.
+ * */
 void Server::clientCommunication() {
     char buffer[4096];
     int message;
@@ -40,14 +44,20 @@ void Server::clientCommunication() {
             }
             break;
         }
+
+        // at this point the stream is working, so it's time to do something with the
+        // data
         ch->parseInput(std::string(buffer, 0, message));
 
         std::cout << ch->getResponse().c_str() << std::endl;
         std::cout << ch->getResponseLength() << std::endl;
 
-        send(*this->connection->getClientSocket(), ch->getResponse().c_str(), ch->getResponseLength(), 0);
+        // send the response to the client
+        send(*this->connection->getClientSocket(), ch->getResponse().c_str(),
+             ch->getResponseLength(), 0);
 
-    } while (strcasecmp(buffer, "QUIT") != 0 && !this->abortRequested && message != 0);
+    } while (strcasecmp(buffer, "QUIT") != 0 && !this->abortRequested &&
+             message != 0);
     close(*this->connection->getClientSocket());
 }
 
@@ -93,6 +103,7 @@ int main(int argc, char *argv[]) {
         server.clientCommunication();
     }
 
+    // not strictly necessary, but it's nice to be explicit about what we're doing
     close(*server.getSocket()->getSocket());
     return 0;
 }

@@ -6,6 +6,11 @@
 #include <sys/socket.h>
 #include <unistd.h>
 
+/**
+ * Use the code from the example to set up sockets for the client and the server.
+ * Doing it in an object-oriented way makes the maintenance of the program simpler.
+ * */
+
 ClientSocket::ClientSocket(int port, char *ipAddress) {
     this->port = port;
 

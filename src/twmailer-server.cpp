@@ -1,6 +1,6 @@
 #include "Connection.hpp"
 #include "Server.hpp"
-#include "ServerSocket.hpp"
+#include "Socket.hpp"
 #include <iostream>
 #include <signal.h>
 #include <string.h>
@@ -9,16 +9,15 @@
 
 Server::Server(int port) {
     this->port = port;
-
     this->serverSocket = new ServerSocket(port);
-    this->connection = new Connection(*serverSocket->getServerSocket());
+    this->connection = new Connection(*serverSocket->getSocket());
 }
 
 Connection *Server::getConnection() {
     return this->connection;
 }
 
-ServerSocket *Server::getServerSocket() {
+ServerSocket *Server::getSocket() {
     return this->serverSocket;
 }
 
@@ -60,14 +59,14 @@ void Server::signalHandler(int sig) {
             *this->connection->getClientSocket() = -1;
         }
 
-        if (*this->serverSocket->getServerSocket() != -1) {
-            if (shutdown(*this->serverSocket->getServerSocket(), SHUT_RDWR) == -1) {
-                perror("shutdown *this->serverSocket->getServerSocket()");
+        if (*this->serverSocket->getSocket() != -1) {
+            if (shutdown(*this->serverSocket->getSocket(), SHUT_RDWR) == -1) {
+                perror("shutdown *this->serverSocket->getSocket()");
             }
-            if (close(*this->serverSocket->getServerSocket()) == -1) {
-                perror("close *this->serverSocket->getServerSocket()");
+            if (close(*this->serverSocket->getSocket()) == -1) {
+                perror("close *this->serverSocket->getSocket()");
             }
-            *this->serverSocket->getServerSocket() = -1;
+            *this->serverSocket->getSocket() = -1;
         }
     } else {
         exit(sig);
@@ -83,6 +82,6 @@ int main(int argc, char *argv[]) {
     Server server(atoi(argv[1]));
 
     server.clientCommunication();
-    close(*server.getServerSocket()->getServerSocket());
+    close(*server.getSocket()->getSocket());
     return 0;
 }

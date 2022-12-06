@@ -1,7 +1,7 @@
 #ifndef SERVER_H_
 #define SERVER_H_
 #include "Connection.hpp"
-#include "ServerSocket.hpp"
+#include "Socket.hpp"
 #include <iostream>
 
 class Server {
@@ -19,7 +19,7 @@ class Server {
     void signalHandler(int sig);
 
     Connection *getConnection();
-    ServerSocket *getServerSocket();
+    ServerSocket *getSocket();
 
     static void usage() {
         std::cout << "Usage Server:\n\t./twmailer-server <port> "

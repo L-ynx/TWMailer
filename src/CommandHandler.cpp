@@ -126,6 +126,31 @@ void CommandHandler::readMessage(std::string input) {
     setResponse(response);
 }
 
+void CommandHandler::deleteMessage(std::string input) {
+    std::stringstream istringstream(input);
+    std::string sender;
+    getline(istringstream, sender);
+    std::string messageNumber;
+    getline(istringstream, messageNumber);
+
+    std::string senderDirectory = this->maildir + "/" + sender;
+    std::string filename = senderDirectory + "/" + messageNumber + ".msg";
+    std::string response;
+
+    if (!std::filesystem::exists(senderDirectory)) {
+        response = "ERR\n";
+    } else if (numberOfFiles(senderDirectory) == 0) {
+        response = "ERR\n";
+    } else if (!std::filesystem::exists(
+                   std::filesystem::directory_entry(filename))) {
+        response = "ERR\n";
+    } else {
+        response = "OK\n";
+        std::filesystem::remove(filename);
+    }
+    setResponse(response);
+}
+
 int CommandHandler::numberOfFiles(std::string directory) {
     int counter = 0;
     std::filesystem::path path = directory;

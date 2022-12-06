@@ -18,6 +18,9 @@ class Server {
     void clientCommunication();
     void signalHandler(int sig);
 
+    Connection *getConnection();
+    ServerSocket *getServerSocket();
+
     static void usage() {
         std::cout << "Usage Server:\n\t./twmailer-server <port> "
                      "<mail-spool-directoryname>\n";

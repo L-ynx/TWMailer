@@ -14,16 +14,12 @@ Server::Server(int port) {
     this->connection = new Connection(*serverSocket->getServerSocket());
 }
 
-int main(int argc, char *argv[]) {
-    if (argc != 3) {
-        Server::usage();
-        return EXIT_FAILURE;
-    }
+Connection *Server::getConnection() {
+    return this->connection;
+}
 
-    Server server(atoi(argv[1]));
-
-    server.clientCommunication();
-    return 0;
+ServerSocket *Server::getServerSocket() {
+    return this->serverSocket;
 }
 
 void Server::clientCommunication() {
@@ -76,4 +72,17 @@ void Server::signalHandler(int sig) {
     } else {
         exit(sig);
     }
+}
+
+int main(int argc, char *argv[]) {
+    if (argc != 3) {
+        Server::usage();
+        return EXIT_FAILURE;
+    }
+
+    Server server(atoi(argv[1]));
+
+    server.clientCommunication();
+    close(*server.getServerSocket()->getServerSocket());
+    return 0;
 }

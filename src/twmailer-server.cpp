@@ -7,11 +7,16 @@
 #include <sys/socket.h>
 #include <unistd.h>
 
-Server::Server(int port) {
+Server::Server(int port, std::string directory) {
     this->port = port;
 
+    this->ch = new CommandHandler(directory);
+
     this->serverSocket = new ServerSocket(port);
-    this->connection = new Connection(*serverSocket->getServerSocket());
+}
+
+void Server::connect(Connection *client) {
+    this->connection = client;
 }
 
 Connection *Server::getConnection() {
@@ -41,7 +46,7 @@ void Server::clientCommunication() {
 
         send(*this->connection->getClientSocket(), buffer, message + 1, 0);
 
-    } while (strcmp(buffer, "QUIT") != 0 && !this->abortRequested);
+    } while (strcasecmp(buffer, "QUIT") != 0 && !this->abortRequested);
     close(*this->connection->getClientSocket());
 }
 
@@ -80,9 +85,12 @@ int main(int argc, char *argv[]) {
         return EXIT_FAILURE;
     }
 
-    Server server(atoi(argv[1]));
+    Server server(atoi(argv[1]), argv[2]);
 
-    server.clientCommunication();
-    close(*server.getServerSocket()->getServerSocket());
+    while (true) {
+        server.connect(new Connection(*server.getServerSocket()->getServerSocket()));
+        server.clientCommunication();
+    }
+
     return 0;
 }

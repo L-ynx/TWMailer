@@ -5,6 +5,8 @@
 class CommandHandler {
   private:
     std::string maildir;
+    char *response;
+    int responseLength;
 
   public:
     CommandHandler(std::string directory);
@@ -12,6 +14,9 @@ class CommandHandler {
     std::string getMailDir();
 
     void parseInput(std::string input);
+
+    char *getResponse();
+    int getResponseLength();
 };
 
 #endif // COMMANDHANDLER_H_

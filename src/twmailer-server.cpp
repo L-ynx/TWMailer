@@ -42,11 +42,14 @@ void Server::clientCommunication() {
             }
             break;
         }
-        std::cout << std::string(buffer, 0, message) << std::endl;
+        ch->parseInput(std::string(buffer, 0, message));
 
-        send(*this->connection->getClientSocket(), buffer, message + 1, 0);
+        std::cout << ch->getResponse() << std::endl;
+        std::cout << ch->getResponseLength() << std::endl;
 
-    } while (strcasecmp(buffer, "QUIT") != 0 && !this->abortRequested);
+        send(*this->connection->getClientSocket(), ch->getResponse(), ch->getResponseLength(), 0);
+
+    } while (strcasecmp(buffer, "QUIT") != 0 && !this->abortRequested && message != 0);
     close(*this->connection->getClientSocket());
 }
 

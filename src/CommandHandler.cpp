@@ -39,7 +39,6 @@ void CommandHandler::parseInput(std::string input) {
 
 void CommandHandler::saveMessage(std::string input) {
     std::stringstream istringstream(input);
-
     std::string sender;
     getline(istringstream, sender, '\n');
 
@@ -68,11 +67,39 @@ void CommandHandler::saveMessage(std::string input) {
     of.close();
 }
 
+void CommandHandler::listMessages(std::string input) {
+    std::stringstream istringstream(input);
+    std::string sender;
+    getline(istringstream, sender, '\n');
+
+    std::string senderDirectory = this->maildir + "/" + sender;
+    std::string response;
+
+    if (!std::filesystem::exists(senderDirectory)) {
+        response = "0";
+    } else if (numberOfFiles(senderDirectory) == 0) {
+        response = "0";
+    } else {
+        response += std::to_string(numberOfFiles(senderDirectory)) + "\n";
+        std::filesystem::path path = senderDirectory;
+        for (auto &file : std::filesystem::directory_iterator(path)) {
+            std::ifstream is{ file.path() };
+            std::string sender, receiver, subject;
+            getline(is, sender, '\n');
+            getline(is, receiver, '\n');
+            getline(is, subject, '\n');
+            response += subject + "\n";
+            is.close();
+        }
+    }
+    setResponse(response);
+}
+
 int CommandHandler::numberOfFiles(std::string directory) {
     int counter = 0;
     std::filesystem::path path = directory;
-    for (auto &i : std::filesystem::directory_iterator(path)) {
-        std::cout << i << '\n';
+    for (auto &file : std::filesystem::directory_iterator(path)) {
+        std::cout << file.path() << '\n';
         counter++;
     }
     return counter;

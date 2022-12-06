@@ -9,7 +9,7 @@ class ServerSocket {
   public:
     ServerSocket(int port);
 
-    int getServerSocket();
+    int *getServerSocket();
 };
 
 #endif // SERVER_SOCKET_H_

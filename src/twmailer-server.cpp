@@ -7,29 +7,16 @@
 #include <sys/socket.h>
 #include <unistd.h>
 
-int abortRequested = 0;
-int s0 = -1;
-int s1 = -1;
-
-static void usage() {
-    std::cout
-        << "Usage Server:\n\t./twmailer-server <port> <mail-spool-directoryname>\n";
-}
-
 Server::Server(int port) {
     this->port = port;
 
     this->serverSocket = new ServerSocket(port);
-    this->connection = new Connection(serverSocket->getServerSocket());
-}
-
-Connection Server::getConnection() {
-    return *this->connection;
+    this->connection = new Connection(*serverSocket->getServerSocket());
 }
 
 int main(int argc, char *argv[]) {
     if (argc != 3) {
-        usage();
+        Server::usage();
         return EXIT_FAILURE;
     }
 
@@ -47,7 +34,7 @@ void Server::clientCommunication() {
         memset(buffer, 0, 4096);
         message = recv(*this->connection->getClientSocket(), buffer, 4096, 0);
         if (message == -1) {
-            if (abortRequested) {
+            if (this->abortRequested) {
                 perror("recv error after aborted");
             } else {
                 perror("recv error");
@@ -58,7 +45,7 @@ void Server::clientCommunication() {
 
         send(*this->connection->getClientSocket(), buffer, message + 1, 0);
 
-    } while (strcmp(buffer, "QUIT") != 0 && !abortRequested);
+    } while (strcmp(buffer, "QUIT") != 0 && !this->abortRequested);
 
     close(*this->connection->getClientSocket());
 }
@@ -66,26 +53,26 @@ void Server::clientCommunication() {
 void Server::signalHandler(int sig) {
     if (sig == SIGINT) {
         printf("abort Requested... ");
-        abortRequested = 1;
+        this->abortRequested = 1;
 
-        if (s1 != -1) {
-            if (shutdown(s1, SHUT_RDWR) == -1) {
-                perror("shutdown s1");
+        if (*this->connection->getClientSocket() != -1) {
+            if (shutdown(*this->connection->getClientSocket(), SHUT_RDWR) == -1) {
+                perror("shutdown *this->connection->getClientSocket()");
             }
-            if (close(s1) == -1) {
-                perror("close s1");
+            if (close(*this->connection->getClientSocket()) == -1) {
+                perror("close *this->connection->getClientSocket()");
             }
-            s1 = -1;
+            *this->connection->getClientSocket() = -1;
         }
 
-        if (s0 != -1) {
-            if (shutdown(s0, SHUT_RDWR) == -1) {
-                perror("shutdown s0");
+        if (*this->serverSocket->getServerSocket() != -1) {
+            if (shutdown(*this->serverSocket->getServerSocket(), SHUT_RDWR) == -1) {
+                perror("shutdown *this->serverSocket->getServerSocket()");
             }
-            if (close(s0) == -1) {
-                perror("close s0");
+            if (close(*this->serverSocket->getServerSocket()) == -1) {
+                perror("close *this->serverSocket->getServerSocket()");
             }
-            s0 = -1;
+            *this->serverSocket->getServerSocket() = -1;
         }
     } else {
         exit(sig);

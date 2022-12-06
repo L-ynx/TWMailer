@@ -19,7 +19,8 @@ ServerSocket::ServerSocket(int port) {
     server_address.sin_port = htons(port);
     server_address.sin_addr.s_addr = INADDR_ANY;
 
-    if (bind(this->serverSocket, (struct sockaddr *)&server_address, sizeof(server_address)) == -1) {
+    if (bind(this->serverSocket, (struct sockaddr *)&server_address,
+             sizeof(server_address)) == -1) {
         perror("bind error");
         exit(1);
     }
@@ -30,6 +31,6 @@ ServerSocket::ServerSocket(int port) {
     }
 }
 
-int ServerSocket::getServerSocket() {
-    return serverSocket;
+int *ServerSocket::getServerSocket() {
+    return &serverSocket;
 }

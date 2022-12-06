@@ -18,8 +18,6 @@ Connection::Connection(int serverSocket) {
         perror("accept error");
     }
 
-    close(serverSocket);
-
     char host[NI_MAXHOST];
     char serv[NI_MAXSERV];
     memset(host, 0, NI_MAXHOST);
@@ -34,10 +32,8 @@ Connection::Connection(int serverSocket) {
         std::cout << host << " connected on " << ntohs(client_address.sin_port)
                   << std::endl;
     }
-
-    close(this->clientSocket);
 }
 
-int Connection::getClientSocket() {
-    return this->clientSocket;
+int *Connection::getClientSocket() {
+    return &this->clientSocket;
 }

@@ -9,7 +9,7 @@ class Connection {
   public:
     Connection(int serverSocket);
 
-    int getClientSocket();
+    int *getClientSocket();
 };
 
 #endif // CONNECTION_H_

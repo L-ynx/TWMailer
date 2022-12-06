@@ -46,7 +46,6 @@ void Server::clientCommunication() {
         send(*this->connection->getClientSocket(), buffer, message + 1, 0);
 
     } while (strcmp(buffer, "QUIT") != 0 && !this->abortRequested);
-
     close(*this->connection->getClientSocket());
 }
 

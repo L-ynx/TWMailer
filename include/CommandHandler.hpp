@@ -15,7 +15,8 @@ class CommandHandler {
     std::string getMailDir();
 
     void parseInput(std::string input);
-    void saveMessage(std::string message);
+    void saveMessage(std::string input);
+    void listMessages(std::string input);
 
     int numberOfFiles(std::string directory);
     int nextFreeFileNumber(std::string directory);

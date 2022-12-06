@@ -27,26 +27,18 @@ void CommandHandler::parseInput(std::string input) {
     getline(istringstream, segment, '\n');
 
     if (segment == "SEND") {
-        saveMessage(input);
+        saveMessage(input.erase(0, 5));
     } else if (segment == "LIST") {
     } else if (segment == "READ") {
     } else if (segment == "DEL") {
     }
 }
 
-void CommandHandler::saveMessage(std::string msg) {
-    std::stringstream istringstream(msg);
-    std::string segment;
-    getline(istringstream, segment, '\n');
+void CommandHandler::saveMessage(std::string input) {
+    std::stringstream istringstream(input);
 
     std::string sender;
     getline(istringstream, sender, '\n');
-
-    std::string receiver;
-    getline(istringstream, receiver, '\n');
-
-    std::string subject;
-    getline(istringstream, subject, '\n');
 
     std::string senderDirectory = this->maildir + "/" + sender;
     createDirectory(senderDirectory);
@@ -58,7 +50,7 @@ void CommandHandler::saveMessage(std::string msg) {
         return;
     }
 
-    of << sender << '\n' << receiver << '\n' << subject << '\n';
+    of << sender << '\n';
 
     while (istringstream) {
         std::string segment;
@@ -97,9 +89,8 @@ int CommandHandler::nextFreeFileNumber(std::string directory) {
 }
 
 void CommandHandler::setResponse(std::string message) {
-    std::string res = message;
-    this->response = res.data();
-    this->responseLength = res.length();
+    this->response = message.data();
+    this->responseLength = message.length();
 }
 
 char *CommandHandler::getResponse() {

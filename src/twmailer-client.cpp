@@ -110,10 +110,7 @@ std::string getUserInput() {
             continue;
 
         // Ignore last newline to empty getline buffer
-        // std::cin.ignore(INT_MAX, '\n');
-        // has the same effect without needing to press
-        // enter again to make it work
-        std::cin.clear();
+        std::cin.ignore(INT_MAX, '\n');
     }
     return data;
 }

@@ -110,7 +110,10 @@ std::string getUserInput() {
             continue;
 
         // Ignore last newline to empty getline buffer
-        std::cin.ignore(INT_MAX, '\n');
+        // std::cin.ignore(INT_MAX, '\n');
+        // has the same effect without needing to press
+        // enter again to make it work
+        std::cin.clear();
     }
     return data;
 }
@@ -119,15 +122,15 @@ std::string sendMsg() {
     std::string sender, receiver, subject, msg, msgLine;
 
     std::cout << "\nSender: ";
-    std::cin >> sender;
+    getline(std::cin, sender);
     std::cout << "Receiver: ";
-    std::cin >> receiver;
+    getline(std::cin, receiver);
     std::cout << "Subject: ";
-    std::cin >> subject;
+    getline(std::cin, subject);
     std::cout << "Message: ";
 
     while (msgLine != ".") {
-        std::cin >> msgLine;
+        getline(std::cin, msgLine);
         msg += msgLine + "\n";
     }
 

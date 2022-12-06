@@ -5,7 +5,7 @@
 class CommandHandler {
   private:
     std::string maildir;
-    char *response;
+    std::string response;
     int responseLength;
 
   public:
@@ -24,7 +24,7 @@ class CommandHandler {
     int nextFreeFileNumber(std::string directory);
 
     void setResponse(std::string message);
-    char *getResponse();
+    std::string getResponse();
     int getResponseLength();
 };
 

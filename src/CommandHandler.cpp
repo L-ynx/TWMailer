@@ -179,7 +179,7 @@ void CommandHandler::setResponse(std::string message) {
     this->responseLength = message.length();
 }
 
-char *CommandHandler::getResponse() {
+std::string CommandHandler::getResponse() {
     return this->response;
 }
 int CommandHandler::getResponseLength() {

@@ -11,8 +11,6 @@ int abortRequested = 0;
 int s0 = -1;
 int s1 = -1;
 
-void signalHandler(int sig);
-
 static void usage() {
     std::cout
         << "Usage Server:\n\t./twmailer-server <port> <mail-spool-directoryname>\n";
@@ -65,7 +63,7 @@ void Server::clientCommunication() {
     close(*this->connection->getClientSocket());
 }
 
-void signalHandler(int sig) {
+void Server::signalHandler(int sig) {
     if (sig == SIGINT) {
         printf("abort Requested... ");
         abortRequested = 1;

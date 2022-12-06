@@ -40,13 +40,13 @@ void Server::clientCommunication() {
 
         send(*this->connection->getClientSocket(), buffer, message + 1, 0);
 
-    } while (strcmp(buffer, "QUIT") != 0 && !this->abortRequested);
+    } while (strcasecmp(buffer, "QUIT") != 0 && !this->abortRequested);
     close(*this->connection->getClientSocket());
 }
 
 void Server::signalHandler(int sig) {
     if (sig == SIGINT) {
-        printf("abort Requested... ");
+        std::cout << "abort Requested... ";
         this->abortRequested = 1;
 
         if (*this->connection->getClientSocket() != -1) {

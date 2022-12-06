@@ -64,7 +64,6 @@ ServerSocket::ServerSocket(int port) {
         perror("listen error");
         exit(EXIT_FAILURE);
     }
-    std::cout << "JIJIAJ";
 }
 
 int *Socket::getSocket() {

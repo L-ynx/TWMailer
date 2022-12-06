@@ -88,22 +88,23 @@ std::string getUserInput() {
     while (!validCmd) {
         data = "";
         std::cout << "> ";
+        // Get Usercommand and convert to upper case
         getline(std::cin, input);
-        data += input;
+        for (auto &c : input)
+            data += toupper(c);
 
-        if (strcasecmp(data.c_str(), "QUIT") == 0) {
+        if (data == "QUIT") {
             break;
-        } else if (strcasecmp(data.c_str(), "SEND") == 0) {
+        } else if (data == "SEND") {
             data += sendMsg();
             validCmd = true;
-        } else if (strcasecmp(data.c_str(), "LIST") == 0) {
+        } else if (data == "LIST") {
             data += listMsg();
             validCmd = true;
-        } else if (strcasecmp(data.c_str(), "READ") == 0 ||
-                   strcasecmp(data.c_str(), "DEL") == 0) {
+        } else if (data == "READ" || data == "DEL") {
             data += readOrDelMsg();
             validCmd = true;
-        } else if (strcasecmp(data.c_str(), "HELP") == 0) {
+        } else if (data == "HELP") {
             help();
         } else
             continue;

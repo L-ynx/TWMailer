@@ -30,6 +30,11 @@ int main(int argc, char *argv[]) {
     int port = atoi(argv[1]);
     int s0, s1;
 
+    if (signal(SIGINT, signalHandler) == SIG_ERR) {
+        perror("Signal can not be registered");
+        return EXIT_FAILURE;
+    }
+
     if ((s0 = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
         std::cerr << "Error: " << strerror(errno) << std::endl;
         return EXIT_FAILURE;
@@ -94,11 +99,12 @@ void clientCommunication(void *data) {
             }
             break;
         }
+
         std::cout << std::string(buffer, 0, message) << std::endl;
 
         send(*client, buffer, message + 1, 0);
 
-    } while (strcmp(buffer, "QUIT") != 0 && !abortRequested);
+    } while (strcasecmp(buffer, "QUIT") != 0 && !abortRequested);
 
     close(*client);
 }

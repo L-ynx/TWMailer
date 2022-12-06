@@ -13,10 +13,11 @@ static void help();
 std::string sendMsg();
 std::string listMsg();
 std::string readOrDelMsg();
+std::string getUserInput();
 
 int main(int argc, char *argv[]) {
     struct sockaddr_in server;
-    int port;
+    int port, isQuit;
     char buffer[4096];
 
     if (argc != 3) {
@@ -48,55 +49,14 @@ int main(int argc, char *argv[]) {
     // Print available commands
     commands();
 
-    std::string input;
     // Send and receive data
     do {
-        bool validCmd = false;
-        std::string data;
-
-        // Enter valid command
-        while (!validCmd) {
-            data = "";
-            std::cout << "> ";
-            getline(std::cin, input);
-            data += input;
-
-            if (strcasecmp(data.c_str(), "QUIT") == 0) {
-                if (sock != -1) {
-                    if (shutdown(sock, SHUT_RDWR) == -1) {
-                        perror("shutdown sock");
-                    }
-                    if (close(sock) == -1) {
-                        perror("close sock");
-                    }
-                    sock = -1;
-                }
-                return EXIT_SUCCESS;
-            }
-
-            if (strcasecmp(data.c_str(), "SEND") == 0) {
-                data += sendMsg();
-                validCmd = true;
-            } else if (strcasecmp(data.c_str(), "LIST") == 0) {
-                data += listMsg();
-                validCmd = true;
-            } else if (strcasecmp(data.c_str(), "READ") == 0 ||
-                       strcasecmp(data.c_str(), "DEL") == 0) {
-                data += readOrDelMsg();
-                validCmd = true;
-            } else if (strcasecmp(data.c_str(), "HELP") == 0) {
-                help();
-            } else
-                continue;
-
-            // Ignore last newline to empty getline buffer
-            std::cin.ignore(INT_MAX, '\n');
-        }
+        std::string data = getUserInput();
+        isQuit = strcasecmp(data.c_str(), "QUIT") == 0;
 
         // Send Client input data to server
         if ((send(sock, data.c_str(), data.size() + 1, 0)) == -1) {
-            perror(
-                "An error occurred while trying to send the data to the server.\n");
+            perror("An error occurred while trying to send data to the server.\n");
             continue;
         }
         // Receive answer from server
@@ -104,7 +64,7 @@ int main(int argc, char *argv[]) {
         int feedback = recv(sock, buffer, 4096, 0);
 
         if (feedback == -1) {
-            perror("An error occurred while trying to receive the data from the "
+            perror("An error occurred while trying to receive data from the "
                    "server.\n");
             break;
         } else if (feedback == 0) {
@@ -114,11 +74,53 @@ int main(int argc, char *argv[]) {
             std::cout << std::string(buffer, feedback) << std::endl;
         }
 
-    } while (true);
+    } while (!isQuit);
 
-    close(sock);
+    if (sock != -1) {
+        if (shutdown(sock, SHUT_RDWR) == -1) {
+            // invalid in case the server is gone already
+            perror("Shutdown sock");
+        }
+        if (close(sock) == -1) {
+            perror("Close sock");
+        }
+        sock = -1;
+    }
 
     return EXIT_SUCCESS;
+}
+
+// Read User command and message
+std::string getUserInput() {
+    bool validCmd = false;
+    std::string data, input;
+    while (!validCmd) {
+        data = "";
+        std::cout << "> ";
+        getline(std::cin, input);
+        data += input;
+
+        if (strcasecmp(data.c_str(), "QUIT") == 0) {
+            break;
+        } else if (strcasecmp(data.c_str(), "SEND") == 0) {
+            data += sendMsg();
+            validCmd = true;
+        } else if (strcasecmp(data.c_str(), "LIST") == 0) {
+            data += listMsg();
+            validCmd = true;
+        } else if (strcasecmp(data.c_str(), "READ") == 0 ||
+                   strcasecmp(data.c_str(), "DEL") == 0) {
+            data += readOrDelMsg();
+            validCmd = true;
+        } else if (strcasecmp(data.c_str(), "HELP") == 0) {
+            help();
+        } else
+            continue;
+
+        // Ignore last newline to empty getline buffer
+        std::cin.ignore(INT_MAX, '\n');
+    }
+    return data;
 }
 
 std::string sendMsg() {

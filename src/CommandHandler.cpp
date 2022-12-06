@@ -29,8 +29,11 @@ void CommandHandler::parseInput(std::string input) {
     if (segment == "SEND") {
         saveMessage(input.erase(0, 5));
     } else if (segment == "LIST") {
+        listMessages(input.erase(0, 5));
     } else if (segment == "READ") {
+        readMessage(input.erase(0, 5));
     } else if (segment == "DEL") {
+        deleteMessage(input.erase(0, 4));
     }
 }
 

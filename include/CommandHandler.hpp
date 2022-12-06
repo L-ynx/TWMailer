@@ -17,6 +17,8 @@ class CommandHandler {
     void parseInput(std::string input);
     void saveMessage(std::string input);
     void listMessages(std::string input);
+    void readMessage(std::string input);
+    void deleteMessage(std::string input);
 
     int numberOfFiles(std::string directory);
     int nextFreeFileNumber(std::string directory);

@@ -174,7 +174,6 @@ int CommandHandler::numberOfFiles(std::string directory) {
     int counter = 0;
     std::filesystem::path path = directory;
     for (auto &file : std::filesystem::directory_iterator(path)) {
-        std::cout << file.path() << '\n';
         counter++;
     }
     return counter;
@@ -197,9 +196,12 @@ void CommandHandler::setResponse(std::string message) {
     this->response = message.data();
     this->responseLength = message.length();
 }
-
 std::string CommandHandler::getResponse() {
     return this->response;
+}
+
+void CommandHandler::setResponseLength(int value) {
+    this->responseLength = value;
 }
 int CommandHandler::getResponseLength() {
     return this->responseLength;

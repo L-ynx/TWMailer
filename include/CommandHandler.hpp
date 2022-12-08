@@ -34,6 +34,7 @@ class CommandHandler {
 
     void setResponse(std::string message);
     std::string getResponse();
+    void setResponseLength(int value);
     int getResponseLength();
 };
 

@@ -82,7 +82,8 @@ void CommandHandler::listMessages(std::string input) {
         std::filesystem::path path = senderDirectory;
         for (auto &file : std::filesystem::directory_iterator(path)) {
             std::ifstream is{file.path()};
-            std::string receiver, subject;
+            std::string sender, receiver, subject;
+            getline(is, sender);
             getline(is, receiver);
             getline(is, subject);
             response += subject + "\n";

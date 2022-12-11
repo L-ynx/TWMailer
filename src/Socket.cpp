@@ -24,7 +24,7 @@ ClientSocket::ClientSocket(int port, char *ipAddress) {
     // Assign address family, port and IP address
     memset(&server, 0, sizeof(server));
     server.sin_family = AF_INET;
-    server.sin_port = htons(10001);
+    server.sin_port = htons(port);
     inet_aton(ipAddress, &server.sin_addr);
 
     // Connect to server

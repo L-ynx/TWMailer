@@ -9,12 +9,6 @@
 #include <unistd.h>
 
 static void usage();
-static void commands();
-static void help();
-std::string sendMsg();
-std::string listMsg();
-std::string readOrDelMsg();
-std::string getUserInput();
 
 Client::Client(int port, char *ipAddress) {
     this->port = port;
@@ -26,8 +20,6 @@ ClientSocket *Client::getSocket() {
 }
 
 int main(int argc, char *argv[]) {
-    int isQuit;
-    char buffer[4096];
 
     if (argc != 3) {
         usage();
@@ -36,24 +28,34 @@ int main(int argc, char *argv[]) {
 
     // Create a new client
     Client client(atoi(argv[2]), argv[1]);
+    client.clientCommunication();
 
     // Print available commands
-    commands();
+
+    return EXIT_SUCCESS;
+}
+
+void Client::clientCommunication() {
+
+    char buffer[4096];
+    this->commands();
 
     // Send and receive data
     do {
-        std::string data = getUserInput();
+        std::string data = this->getUserInput();
         isQuit = strcasecmp(data.c_str(), "QUIT") == 0;
+        if (isQuit)
+            break;
 
         // Send Client input data to server
-        if ((send(*client.getSocket()->getSocket(), data.c_str(), data.size() + 1,
+        if ((send(*this->getSocket()->getSocket(), data.c_str(), data.size() + 1,
                   0)) == -1) {
             perror("An error occurred while trying to send data to the server.\n");
             continue;
         }
         // Receive answer from server
         memset(buffer, 0, 4096);
-        int feedback = recv(*client.getSocket()->getSocket(), buffer, 4096, 0);
+        int feedback = recv(*this->getSocket()->getSocket(), buffer, 4096, 0);
 
         if (feedback == -1) {
             perror("An error occurred while trying to receive data from the "
@@ -69,22 +71,22 @@ int main(int argc, char *argv[]) {
     } while (!isQuit);
 
     // Close socket
-    if (*client.getSocket()->getSocket() != -1) {
-        if (shutdown(*client.getSocket()->getSocket(), SHUT_RDWR) == -1) {
+    if (*this->getSocket()->getSocket() != -1) {
+        if (shutdown(*this->getSocket()->getSocket(), SHUT_RDWR) == -1) {
             // invalid in case the server is gone already
-            perror("Shutdown *client.getSocket()->getSocket()");
+            perror("Shutdown this->getSocket()->getSocket()");
         }
-        if (close(*client.getSocket()->getSocket()) == -1) {
-            perror("Close *client.getSocket()->getSocket()");
+        if (close(*this->getSocket()->getSocket()) == -1) {
+            perror("Close this->getSocket()->getSocket()");
         }
-        *client.getSocket()->getSocket() = -1;
+        *this->getSocket()->getSocket() = -1;
     }
-
-    return EXIT_SUCCESS;
 }
 
+void Client::login() {}
+
 // Read User command and message
-std::string getUserInput() {
+std::string Client::getUserInput() {
     bool validCmd = false;
     bool send = false;
     std::string data, input;
@@ -98,18 +100,25 @@ std::string getUserInput() {
 
         if (data == "QUIT") {
             break;
-        } else if (data == "SEND") {
-            data += sendMsg();
+        }
+        if (isLoggedIn) {
+            if (data == "SEND") {
+                data += this->sendMsg();
+                send = true;
+                validCmd = true;
+            } else if (data == "LIST") {
+                data += this->listMsg();
+                validCmd = true;
+            } else if (data == "READ" || data == "DEL") {
+                data += this->readOrDelMsg();
+                validCmd = true;
+            } else if (data == "HELP") {
+                help();
+            }
+        } else if (!isLoggedIn && data == "LOGIN") {
+            data += this->loginInput();
             send = true;
             validCmd = true;
-        } else if (data == "LIST") {
-            data += listMsg();
-            validCmd = true;
-        } else if (data == "READ" || data == "DEL") {
-            data += readOrDelMsg();
-            validCmd = true;
-        } else if (data == "HELP") {
-            help();
         } else
             continue;
 
@@ -121,11 +130,9 @@ std::string getUserInput() {
     return data;
 }
 
-std::string sendMsg() {
-    std::string sender, receiver, subject, msg, msgLine;
+std::string Client::sendMsg() {
+    std::string receiver, subject, msg, msgLine;
 
-    std::cout << "\nSender: ";
-    getline(std::cin, sender);
     std::cout << "Receiver: ";
     getline(std::cin, receiver);
     std::cout << "Subject: ";
@@ -137,44 +144,61 @@ std::string sendMsg() {
         msg += msgLine + "\n";
     }
 
-    if (sender.size() > 8)
-        sender.resize(8);
     if (receiver.size() > 8)
         receiver.resize(8);
     if (subject.size() > 80)
         subject.resize(80);
 
-    return "\n" + sender + "\n" + receiver + "\n" + subject + "\n" + msg + "\n";
+    return "\n" + this->user + "\n" + receiver + "\n" + subject + "\n" + msg + "\n";
 }
 
-std::string listMsg() {
-    std::string username;
-
-    std::cout << "\nUsername: ";
-    std::cin >> username;
-
-    return "\n" + username + "\n";
+std::string Client::listMsg() {
+    return "\n" + this->user + "\n";
 }
 
-std::string readOrDelMsg() {
-    std::string username, msgNr;
-    std::cout << "\nUsername: ";
-    std::cin >> username;
+std::string Client::readOrDelMsg() {
+    std::string msgNr;
     std::cout << "Message-Number: ";
     std::cin >> msgNr;
 
-    return "\n" + username + "\n" + msgNr + "\n";
+    return "\n" + this->user + "\n" + msgNr + "\n";
+}
+
+std::string Client::loginInput() {
+    std::string username, password;
+    std::cout << "\nPlease enter your credentials. The username has a maximum "
+                 "length of 8 chars. Automatic trim in case of Overflow";
+
+    while (password.size() == 0) {
+        std::cout << "\nUsername: ";
+        getline(std::cin, username);
+        std::cout << "\nPassword: ";
+        getline(std::cin, password);
+        if (password.size() == 0) {
+            std::cout << "\nPassword can't be empty!";
+        }
+    }
+
+    if (username.size() > 8)
+        username.resize(8);
+
+    this->user = username;
+
+    return "\n" + this->user + "\n" + password + "\n";
 }
 
 static void usage() {
     std::cout << "Usage Client:\n\t./twmailer-client <ip> <port>\n";
 }
 
-static void commands() {
-    std::cout << "Available commands:\tSEND\tLIST\tREAD\tDEL\tQUIT\tHELP\n";
+void Client::commands() {
+    if (!isLoggedIn)
+        std::cout << "Available commands: \tLOGIN\tQUIT\n";
+    else
+        std::cout << "Available commands:\tSEND\tLIST\tREAD\tDEL\tQUIT\tHELP\n";
 }
 
-static void help() {
+void Client::help() {
     char c;
 
     std::cout << "(S)END: client sends a message to the server.\n(L)IST: lists all "

@@ -33,6 +33,8 @@ void CommandHandler::parseInput(std::string input) {
         readMessage(input);
     } else if (this->command == "DEL") {
         deleteMessage(input);
+    } else if (this->command == "LOGIN") {
+        attemptLogin(input);
     }
 }
 
@@ -117,6 +119,14 @@ void CommandHandler::readMessage(std::string input) {
         }
         is.close();
     }
+    setResponse(response);
+}
+
+/////////////////////////////////////////
+// TODO: Implement Login
+/////////////////////////////////////////
+void CommandHandler::attemptLogin(std::string input) {
+    response = "test";
     setResponse(response);
 }
 

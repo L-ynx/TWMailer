@@ -23,6 +23,7 @@ class CommandHandler {
     void listMessages(std::string input);
     void readMessage(std::string input);
     void deleteMessage(std::string input);
+    void attemptLogin(std::string input);
 
     std::string readCommand(std::string input);
     std::string readSender(std::string input);

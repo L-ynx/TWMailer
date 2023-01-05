@@ -6,6 +6,10 @@
 class Client {
   private:
     int port;
+    int isQuit = 0;
+    int loginAttempt = 0;
+    bool isLoggedIn = false;
+    std::string user;
 
     ClientSocket *clientSocket;
 
@@ -14,9 +18,15 @@ class Client {
 
     ClientSocket *getSocket();
 
-    static void usage() {
-        std::cout << "Usage Client:\n\t./twmailer-client <ip> <port>\n";
-    };
+    void clientCommunication();
+    void login();
+    void commands();
+    std::string loginInput();
+    std::string readOrDelMsg();
+    std::string listMsg();
+    std::string sendMsg();
+    std::string getUserInput();
+    void help();
 };
 
 #endif // CLIENT_H_

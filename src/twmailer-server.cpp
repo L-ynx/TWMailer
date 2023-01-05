@@ -51,8 +51,8 @@ void Server::clientCommunication(Connection *conn) {
         // data
         ch->parseInput(std::string(buffer, 0, message));
 
-        std::cout << ch->getResponse().c_str() << std::endl;
-        std::cout << ch->getResponseLength() << std::endl;
+        // std::cout << ch->getResponse().c_str() << std::endl;
+        // std::cout << ch->getResponseLength() << std::endl;
 
         // send the response to the client
         send(*conn->getClientSocket(), ch->getResponse().c_str(),
@@ -60,7 +60,7 @@ void Server::clientCommunication(Connection *conn) {
 
     } while (strcasecmp(buffer, "QUIT") != 0 && !this->abortRequested &&
              message != 0);
-    close(*conn->getClientSocket());
+    // close(*conn->getClientSocket());
 }
 
 /*void Server::signalHandler(int sig) {

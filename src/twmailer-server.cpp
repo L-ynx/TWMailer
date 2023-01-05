@@ -5,6 +5,7 @@
 #include <signal.h>
 #include <string.h>
 #include <sys/socket.h>
+#include <thread>
 #include <unistd.h>
 
 Server::Server(int port, std::string directory) {
@@ -14,12 +15,12 @@ Server::Server(int port, std::string directory) {
 }
 
 void Server::connect(Connection *client) {
-    this->connection = client;
+    connection.push_back(client);
 }
 
-Connection *Server::getConnection() {
+/*Connection *Server::getConnection() {
     return this->connection;
-}
+}*/
 
 ServerSocket *Server::getSocket() {
     return this->serverSocket;
@@ -29,14 +30,14 @@ ServerSocket *Server::getSocket() {
  * Use the code from the example to communicate with the client. Doing it in an
  * object-oriented way makes the maintenance of the program simpler.
  * */
-void Server::clientCommunication() {
+void Server::clientCommunication(Connection *conn) {
     char buffer[4096];
     int message;
 
     do {
         memset(buffer, 0, 4096);
         // Receive client message
-        message = recv(*this->connection->getClientSocket(), buffer, 4096, 0);
+        message = recv(*conn->getClientSocket(), buffer, 4096, 0);
         if (message == -1) {
             if (this->abortRequested) {
                 perror("recv error after aborted");
@@ -54,27 +55,27 @@ void Server::clientCommunication() {
         std::cout << ch->getResponseLength() << std::endl;
 
         // send the response to the client
-        send(*this->connection->getClientSocket(), ch->getResponse().c_str(),
+        send(*conn->getClientSocket(), ch->getResponse().c_str(),
              ch->getResponseLength(), 0);
 
     } while (strcasecmp(buffer, "QUIT") != 0 && !this->abortRequested &&
              message != 0);
-    close(*this->connection->getClientSocket());
+    close(*conn->getClientSocket());
 }
 
-void Server::signalHandler(int sig) {
+/*void Server::signalHandler(int sig) {
     if (sig == SIGINT) {
         std::cout << "abort Requested... ";
         this->abortRequested = 1;
 
-        if (*this->connection->getClientSocket() != -1) {
-            if (shutdown(*this->connection->getClientSocket(), SHUT_RDWR) == -1) {
-                perror("shutdown *this->connection->getClientSocket()");
+        if (*conn->getClientSocket() != -1) {
+            if (shutdown(*conn->getClientSocket(), SHUT_RDWR) == -1) {
+                perror("shutdown *conn->getClientSocket()");
             }
-            if (close(*this->connection->getClientSocket()) == -1) {
-                perror("close *this->connection->getClientSocket()");
+            if (close(*conn->getClientSocket()) == -1) {
+                perror("close *conn->getClientSocket()");
             }
-            *this->connection->getClientSocket() = -1;
+            *conn->getClientSocket() = -1;
         }
 
         if (*this->serverSocket->getSocket() != -1) {
@@ -89,7 +90,7 @@ void Server::signalHandler(int sig) {
     } else {
         exit(sig);
     }
-}
+}*/
 
 int main(int argc, char *argv[]) {
     if (argc != 3) {
@@ -102,8 +103,11 @@ int main(int argc, char *argv[]) {
 
     // Establish and maintain connection
     while (true) {
-        server.connect(new Connection(*server.getSocket()->getSocket()));
-        server.clientCommunication();
+        Connection *newClient = new Connection(*server.getSocket()->getSocket());
+        // server.connect(newClient);
+        std::thread t(&Server::clientCommunication, server, newClient);
+
+        t.detach();
     }
 
     // not strictly necessary, but it's nice to be explicit about what we're doing

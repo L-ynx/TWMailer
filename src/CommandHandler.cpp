@@ -3,6 +3,7 @@
 #include <filesystem>
 #include <fstream>
 #include <iostream>
+#include <ldap.h>
 #include <sstream>
 #include <string>
 
@@ -36,6 +37,75 @@ void CommandHandler::parseInput(std::string input) {
     } else if (this->command == "LOGIN") {
         attemptLogin(input);
     }
+}
+
+/////////////////////////////////////////
+// TODO: Implement Login
+/////////////////////////////////////////
+void CommandHandler::attemptLogin(std::string input) {
+    std::stringstream istringstream(input);
+    // LDAP config
+    // anonymous bind with user and pw empty
+    const char *ldapUri = "ldap://ldap.technikum-wien.at:389";
+    const int ldapVersion = LDAP_VERSION3;
+    int rc = 0; // return code
+    std::string password = trim(input);
+    std::string username =
+        "uid=" + this->sender + ",ou=people,dc=technikum-wien,dc=at";
+    std::cout << "\n" << password << "A\n";
+
+    ////////////////////////////////////////////////////////////////////////////
+    // setup LDAP connection
+    // https://linux.die.net/man/3/ldap_initialize
+    LDAP *ldapHandle;
+    rc = ldap_initialize(&ldapHandle, ldapUri);
+
+    if (rc != LDAP_SUCCESS) {
+        fprintf(stderr, "ldap_init failed\n");
+        setResponse("ERR");
+        return;
+    }
+    printf("connected to LDAP server %s\n", ldapUri);
+
+    // set verison options
+    // https://linux.die.net/man/3/ldap_set_option
+    rc = ldap_set_option(ldapHandle,
+                         LDAP_OPT_PROTOCOL_VERSION, // OPTION
+                         &ldapVersion);             // IN-Value
+    if (rc != LDAP_OPT_SUCCESS) {
+        // https://www.openldap.org/software/man.cgi?query=ldap_err2string&sektion=3&apropos=0&manpath=OpenLDAP+2.4-Release
+        fprintf(stderr, "ldap_set_option(PROTOCOL_VERSION): %s\n",
+                ldap_err2string(rc));
+        ldap_unbind_ext_s(ldapHandle, NULL, NULL);
+        setResponse("ERR");
+        return;
+    }
+
+    // Initialize TLS
+    rc = ldap_start_tls_s(ldapHandle, NULL, NULL);
+    if (rc != LDAP_SUCCESS) {
+        fprintf(stderr, "ldap_start_tls_s(): %s\n", ldap_err2string(rc));
+        ldap_unbind_ext_s(ldapHandle, NULL, NULL);
+        setResponse("ERR");
+        return;
+    }
+
+    BerValue bindCredentials;
+    bindCredentials.bv_val = (char *)password.c_str();
+    bindCredentials.bv_len = strlen(password.c_str());
+    BerValue *servercredp; // server's credentials
+    rc = ldap_sasl_bind_s(ldapHandle, username.c_str(), LDAP_SASL_SIMPLE,
+                          &bindCredentials, NULL, NULL, &servercredp);
+    if (rc != LDAP_SUCCESS) {
+        fprintf(stderr, "LDAP bind error: %s\n", ldap_err2string(rc));
+        ldap_unbind_ext_s(ldapHandle, NULL, NULL);
+        setResponse("ERR");
+        return;
+    }
+    ldap_unbind_ext_s(ldapHandle, NULL, NULL);
+
+    response = "OK";
+    setResponse(response);
 }
 
 void CommandHandler::saveMessage(std::string input) {
@@ -119,14 +189,6 @@ void CommandHandler::readMessage(std::string input) {
         }
         is.close();
     }
-    setResponse(response);
-}
-
-/////////////////////////////////////////
-// TODO: Implement Login
-/////////////////////////////////////////
-void CommandHandler::attemptLogin(std::string input) {
-    response = "test";
     setResponse(response);
 }
 

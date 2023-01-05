@@ -38,6 +38,7 @@ int main(int argc, char *argv[]) {
 void Client::clientCommunication() {
 
     char buffer[4096];
+    std::string msg;
     this->commands();
 
     // Send and receive data
@@ -65,7 +66,18 @@ void Client::clientCommunication() {
             std::cout << "Server closed remote socket\n";
             break;
         } else {
+            msg = std::string(buffer, feedback);
             std::cout << std::string(buffer, feedback) << std::endl;
+
+            if (loginAttempt > 0 && strcasecmp(msg.c_str(), "OK")) {
+                loginAttempt = 0;
+                isLoggedIn = true;
+
+                std::cout << "\nLogin successful!\n\n";
+                this->commands();
+            } else {
+                std::cout << "\nLogin failed!";
+            }
         }
 
     } while (!isQuit);
@@ -167,7 +179,7 @@ std::string Client::readOrDelMsg() {
 std::string Client::loginInput() {
     std::string username, password;
     std::cout << "\nPlease enter your credentials. The username has a maximum "
-                 "length of 8 chars. Automatic trim in case of Overflow";
+                 "length of 8 chars. Automatic trim in case of Overflow\n";
 
     while (password.size() == 0) {
         std::cout << "\nUsername: ";
@@ -183,6 +195,7 @@ std::string Client::loginInput() {
         username.resize(8);
 
     this->user = username;
+    this->loginAttempt++;
 
     return "\n" + this->user + "\n" + password + "\n";
 }

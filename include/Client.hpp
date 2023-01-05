@@ -21,12 +21,13 @@ class Client {
     void clientCommunication();
     void login();
     void commands();
+    void help();
+
     std::string loginInput();
     std::string readOrDelMsg();
     std::string listMsg();
     std::string sendMsg();
     std::string getUserInput();
-    void help();
 };
 
 #endif // CLIENT_H_

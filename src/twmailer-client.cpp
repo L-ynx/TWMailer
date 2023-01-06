@@ -31,8 +31,6 @@ int main(int argc, char *argv[]) {
     Client client(atoi(argv[2]), argv[1]);
     client.clientCommunication();
 
-    // Print available commands
-
     return EXIT_SUCCESS;
 }
 
@@ -70,13 +68,15 @@ void Client::clientCommunication() {
             msg = std::string(buffer, feedback);
             std::cout << std::string(buffer, feedback) << std::endl;
 
-            if (loginAttempt > 0 && strcasecmp(msg.c_str(), "OK") == 0) {
-                loginAttempt = 0;
-                isLoggedIn = true;
+            if (loginAttempt > 0) {
+                if (strcasecmp(msg.c_str(), "OK") == 0) {
+                    loginAttempt = 0;
+                    isLoggedIn = true;
 
-                std::cout << "\nLogin successful!\n\n";
-            } else {
-                std::cout << "\nLogin failed!\n";
+                    std::cout << "\nLogin successful!\n\n";
+                } else {
+                    std::cout << "\nLogin failed!\n";
+                }
             }
             this->commands();
         }

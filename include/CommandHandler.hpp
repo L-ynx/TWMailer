@@ -29,6 +29,7 @@ class CommandHandler {
     std::string readSender(std::string input);
     std::string readMessageNumber(std::string input);
     std::string trim(std::string input);
+    std::string trimPW(std::string input);
 
     int numberOfFiles(std::string directory);
     int nextFreeFileNumber(std::string directory);

@@ -6,6 +6,7 @@
 #include <string.h>
 #include <sys/socket.h>
 #include <sys/types.h>
+#include <termios.h>
 #include <unistd.h>
 
 static void usage();
@@ -69,15 +70,15 @@ void Client::clientCommunication() {
             msg = std::string(buffer, feedback);
             std::cout << std::string(buffer, feedback) << std::endl;
 
-            if (loginAttempt > 0 && strcasecmp(msg.c_str(), "OK")) {
+            if (loginAttempt > 0 && strcasecmp(msg.c_str(), "OK") == 0) {
                 loginAttempt = 0;
                 isLoggedIn = true;
 
                 std::cout << "\nLogin successful!\n\n";
-                this->commands();
             } else {
-                std::cout << "\nLogin failed!";
+                std::cout << "\nLogin failed!\n";
             }
+            this->commands();
         }
 
     } while (!isQuit);
@@ -95,8 +96,6 @@ void Client::clientCommunication() {
     }
 }
 
-void Client::login() {}
-
 // Read User command and message
 std::string Client::getUserInput() {
     bool validCmd = false;
@@ -105,6 +104,7 @@ std::string Client::getUserInput() {
     while (!validCmd) {
         data = "";
         std::cout << "> ";
+
         // Get Usercommand and convert to upper case
         getline(std::cin, input);
         for (auto &c : input)
@@ -128,7 +128,7 @@ std::string Client::getUserInput() {
                 help();
             }
         } else if (!isLoggedIn && data == "LOGIN") {
-            data += this->loginInput();
+            data += this->login();
             send = true;
             validCmd = true;
         } else
@@ -176,7 +176,7 @@ std::string Client::readOrDelMsg() {
     return "\n" + this->user + "\n" + msgNr + "\n";
 }
 
-std::string Client::loginInput() {
+std::string Client::login() {
     std::string username, password;
     std::cout << "\nPlease enter your credentials. The username has a maximum "
                  "length of 8 chars. Automatic trim in case of Overflow\n";
@@ -185,7 +185,7 @@ std::string Client::loginInput() {
         std::cout << "\nUsername: ";
         getline(std::cin, username);
         std::cout << "\nPassword: ";
-        getline(std::cin, password);
+        password = getPW();
         if (password.size() == 0) {
             std::cout << "\nPassword can't be empty!";
         }
@@ -198,6 +198,44 @@ std::string Client::loginInput() {
     this->loginAttempt++;
 
     return "\n" + this->user + "\n" + password + "\n";
+}
+
+int Client::getch() {
+    int ch;
+    struct termios t_old, t_new;
+
+    tcgetattr(STDIN_FILENO, &t_old);
+    t_new = t_old;
+    t_new.c_lflag &= ~(ICANON | ECHO);
+    tcsetattr(STDIN_FILENO, TCSANOW, &t_new);
+
+    ch = getchar();
+
+    tcsetattr(STDIN_FILENO, TCSANOW, &t_old);
+    return ch;
+}
+
+// Read Password Input and hide with asterisks
+std::string Client::getPW() {
+    const char BACKSPACE = 127;
+    const char RETURN = 10;
+
+    std::string password;
+    unsigned char ch = 0;
+
+    while ((ch = getch()) != RETURN) {
+        if (ch == BACKSPACE) {
+            if (password.length() != 0) {
+                std::cout << "\b \b";
+                password.resize(password.length() - 1);
+            }
+        } else {
+            password += ch;
+            std::cout << '*';
+        }
+    }
+    std::cout << std::endl;
+    return password;
 }
 
 static void usage() {

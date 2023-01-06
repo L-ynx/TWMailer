@@ -39,24 +39,17 @@ void CommandHandler::parseInput(std::string input) {
     }
 }
 
-/////////////////////////////////////////
-// TODO: Implement Login
-/////////////////////////////////////////
 void CommandHandler::attemptLogin(std::string input) {
-    std::stringstream istringstream(input);
     // LDAP config
     // anonymous bind with user and pw empty
     const char *ldapUri = "ldap://ldap.technikum-wien.at:389";
     const int ldapVersion = LDAP_VERSION3;
     int rc = 0; // return code
-    std::string password = trim(input);
+    std::string password = trimPW(input);
     std::string username =
         "uid=" + this->sender + ",ou=people,dc=technikum-wien,dc=at";
-    std::cout << "\n" << password << "A\n";
 
-    ////////////////////////////////////////////////////////////////////////////
     // setup LDAP connection
-    // https://linux.die.net/man/3/ldap_initialize
     LDAP *ldapHandle;
     rc = ldap_initialize(&ldapHandle, ldapUri);
 
@@ -65,15 +58,12 @@ void CommandHandler::attemptLogin(std::string input) {
         setResponse("ERR");
         return;
     }
-    printf("connected to LDAP server %s\n", ldapUri);
 
     // set verison options
-    // https://linux.die.net/man/3/ldap_set_option
     rc = ldap_set_option(ldapHandle,
                          LDAP_OPT_PROTOCOL_VERSION, // OPTION
                          &ldapVersion);             // IN-Value
     if (rc != LDAP_OPT_SUCCESS) {
-        // https://www.openldap.org/software/man.cgi?query=ldap_err2string&sektion=3&apropos=0&manpath=OpenLDAP+2.4-Release
         fprintf(stderr, "ldap_set_option(PROTOCOL_VERSION): %s\n",
                 ldap_err2string(rc));
         ldap_unbind_ext_s(ldapHandle, NULL, NULL);
@@ -81,7 +71,7 @@ void CommandHandler::attemptLogin(std::string input) {
         return;
     }
 
-    // Initialize TLS
+    // initialize TLS
     rc = ldap_start_tls_s(ldapHandle, NULL, NULL);
     if (rc != LDAP_SUCCESS) {
         fprintf(stderr, "ldap_start_tls_s(): %s\n", ldap_err2string(rc));
@@ -90,6 +80,7 @@ void CommandHandler::attemptLogin(std::string input) {
         return;
     }
 
+    // bind credentials
     BerValue bindCredentials;
     bindCredentials.bv_val = (char *)password.c_str();
     bindCredentials.bv_len = strlen(password.c_str());
@@ -104,8 +95,7 @@ void CommandHandler::attemptLogin(std::string input) {
     }
     ldap_unbind_ext_s(ldapHandle, NULL, NULL);
 
-    response = "OK";
-    setResponse(response);
+    setResponse("OK");
 }
 
 void CommandHandler::saveMessage(std::string input) {
@@ -239,6 +229,15 @@ std::string CommandHandler::trim(std::string input) {
         message += line + "\n";
     }
     return message;
+}
+
+std::string CommandHandler::trimPW(std::string input) {
+    if (!input.empty()) {
+        while (input.back() == '\n')
+            input.pop_back();
+    }
+
+    return input;
 }
 
 int CommandHandler::numberOfFiles(std::string directory) {

@@ -19,15 +19,17 @@ class Client {
     ClientSocket *getSocket();
 
     void clientCommunication();
-    void login();
     void commands();
     void help();
 
-    std::string loginInput();
+    std::string login();
     std::string readOrDelMsg();
     std::string listMsg();
     std::string sendMsg();
     std::string getUserInput();
+    std::string getPW();
+
+    int getch();
 };
 
 #endif // CLIENT_H_

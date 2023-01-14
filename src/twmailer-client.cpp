@@ -69,13 +69,13 @@ void Client::clientCommunication() {
             std::cout << std::string(buffer, feedback) << std::endl;
 
             if (loginAttempt > 0) {
-                if (strcasecmp(msg.c_str(), "OK") == 0) {
+                if (strcasecmp(msg.c_str(), "OK\n") == 0) {
                     loginAttempt = 0;
                     isLoggedIn = true;
 
                     std::cout << "\nLogin successful!\n\n";
                 } else {
-                    std::cout << "\nLogin failed!\n";
+                    std::cout << "Login failed!\n";
                 }
             }
             this->commands();
@@ -101,6 +101,7 @@ std::string Client::getUserInput() {
     bool validCmd = false;
     bool send = false;
     std::string data, input;
+
     while (!validCmd) {
         data = "";
         std::cout << "> ";
@@ -120,6 +121,7 @@ std::string Client::getUserInput() {
                 validCmd = true;
             } else if (data == "LIST") {
                 data += this->listMsg();
+                send = true;
                 validCmd = true;
             } else if (data == "READ" || data == "DEL") {
                 data += this->readOrDelMsg();
@@ -179,7 +181,7 @@ std::string Client::readOrDelMsg() {
 std::string Client::login() {
     std::string username, password;
     std::cout << "\nPlease enter your credentials. The username has a maximum "
-                 "length of 8 chars. Automatic trim in case of Overflow\n";
+                 "length of 8 chars. Automatic trim in case of overflow\n";
 
     while (password.size() == 0) {
         std::cout << "\nUsername: ";
@@ -265,18 +267,18 @@ void Client::help() {
 
         switch (c) {
         case 'S':
-            std::cout << "\nSEND\n\t<Sender>\n\t<Receiver>\n\t<Subject (max. 80 "
+            std::cout << "\nSEND\n\t<Receiver>\n\t<Subject (max. 80 "
                          "chars)>\n\t<message (multi-line; no length "
                          "restrictions)>\n\t.\n";
             continue;
         case 'L':
-            std::cout << "\nLIST\n\t<Username>\n";
+            std::cout << "\nLIST\n";
             continue;
         case 'R':
-            std::cout << "\nREAD\n\t<Username>\n\t<Message-Number>\n";
+            std::cout << "\nREAD\n\t<Message-Number>\n";
             continue;
         case 'D':
-            std::cout << "\nDEL\n\tUsername>\n\t<Message-Number>\n";
+            std::cout << "\nDEL\n\t<Message-Number>\n";
             continue;
         case 'Q':
             std::cout << "\nQUIT\n";

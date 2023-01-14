@@ -7,6 +7,7 @@
 #include <mutex>
 #include <sstream>
 #include <string>
+#include <unistd.h>
 
 CommandHandler::CommandHandler(std::string directory) {
     this->maildir = directory;
@@ -73,7 +74,7 @@ void CommandHandler::attemptLogin(std::string input) {
 
         if (rc != LDAP_SUCCESS) {
             fprintf(stderr, "ldap_init failed\n");
-            setResponse("ERR");
+            setResponse("ERR\n");
             return;
         }
 
@@ -85,7 +86,7 @@ void CommandHandler::attemptLogin(std::string input) {
             fprintf(stderr, "ldap_set_option(PROTOCOL_VERSION): %s\n",
                     ldap_err2string(rc));
             ldap_unbind_ext_s(ldapHandle, NULL, NULL);
-            setResponse("ERR");
+            setResponse("ERR\n");
             return;
         }
 
@@ -94,7 +95,7 @@ void CommandHandler::attemptLogin(std::string input) {
         if (rc != LDAP_SUCCESS) {
             fprintf(stderr, "ldap_start_tls_s(): %s\n", ldap_err2string(rc));
             ldap_unbind_ext_s(ldapHandle, NULL, NULL);
-            setResponse("ERR");
+            setResponse("ERR\n");
             return;
         }
 
@@ -108,7 +109,7 @@ void CommandHandler::attemptLogin(std::string input) {
         if (rc != LDAP_SUCCESS) {
             fprintf(stderr, "LDAP bind error: %s\n", ldap_err2string(rc));
             ldap_unbind_ext_s(ldapHandle, NULL, NULL);
-            setResponse("ERR");
+            setResponse("ERR\n");
             if (++this->failedAttempts >= this->ATTEMPT_LIMIT) {
                 blacklistSender();
             }
@@ -116,7 +117,7 @@ void CommandHandler::attemptLogin(std::string input) {
         }
         ldap_unbind_ext_s(ldapHandle, NULL, NULL);
 
-        setResponse("OK");
+        setResponse("OK\n");
     }
 }
 
@@ -184,9 +185,6 @@ void CommandHandler::readMessage(std::string input) {
     input = readMessageNumber(input);
     std::stringstream istringstream(input);
 
-    std::cout << this->sender << '\n';
-    std::cout << this->messageNumber << '\n';
-
     std::string senderDirectory = this->maildir + "/" + this->sender;
     std::string filename = senderDirectory + "/" + this->messageNumber + ".msg";
     std::string response;
@@ -209,6 +207,8 @@ void CommandHandler::readMessage(std::string input) {
 }
 
 void CommandHandler::deleteMessage(std::string input) {
+    // Critical section: shared resource is accessed here, lock is automatically
+    // released when lock goes out of scope
     std::lock_guard<std::mutex> guard(this->_mutex);
     input = readMessageNumber(input);
     std::stringstream istringstream(input);
@@ -263,7 +263,6 @@ std::string CommandHandler::trimPW(std::string input) {
         while (input.back() == '\n')
             input.pop_back();
     }
-
     return input;
 }
 

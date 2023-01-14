@@ -5,7 +5,7 @@
 # @version 0.1
 
 CPPFLAGS := -Iinclude -Ilib -MMD -MP # C PreProcessor flags
-CXXFLAGS := -std=c++20 -Wall -Werror -pedantic-errors 
+CXXFLAGS := -std=c++20 -Wall -Werror -pedantic-errors
 LIBS=-lldap -llber
 
 SERVER := src/Socket.cpp src/Connection.cpp src/CommandHandler.cpp src/twmailer-server.cpp

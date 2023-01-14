@@ -4,6 +4,7 @@
 #include "Connection.hpp"
 #include "Socket.hpp"
 #include <iostream>
+#include <vector>
 
 class Server {
   private:
@@ -11,7 +12,7 @@ class Server {
     int abortRequested = 0;
     std::string maildir;
 
-    Connection *connection;
+    std::vector<Connection *> connection;
     ServerSocket *serverSocket;
 
     CommandHandler *ch;
@@ -24,7 +25,7 @@ class Server {
     Connection *getConnection();
     ServerSocket *getSocket();
 
-    void clientCommunication();
+    void clientCommunication(Connection *conn);
     void signalHandler(int sig);
 
     static void usage() {

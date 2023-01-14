@@ -1,10 +1,19 @@
 # TWMailer
-A socket-based client-server application in C++ to send and receive messages like an internal mail-server.
+A multi-threaded client-server application in C++ to send and receive messages like an internal mail-server.
 
 ## Created by
+  - Raza Ghulam
   - Skyler Mayfield
-  - Sohaib Raza Ghulam
 
+
+
+
+### Prerequisites
+Install LDAP:
+
+`sudo apt-get update -y`
+
+`sudo apt-get install -y libldap2-dev`
 
 ### Building
 `$ make clean && make`

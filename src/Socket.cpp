@@ -6,6 +6,8 @@
 #include <sys/socket.h>
 #include <unistd.h>
 
+#define BACKLOG 10 // how many pending connections queue will hold
+
 /**
  * Use the code from the example to set up sockets for the client and the server.
  * Doing it in an object-oriented way makes the maintenance of the program simpler.
@@ -71,10 +73,12 @@ ServerSocket::ServerSocket(int port) {
     }
 
     // Listen for a connection
-    if (listen(this->sock, 1) == -1) {
+    if (listen(this->sock, BACKLOG) == -1) {
         perror("listen error");
         exit(EXIT_FAILURE);
     }
+
+    std::cout << "Server listening...\n";
 }
 
 int *Socket::getSocket() {

@@ -38,8 +38,17 @@ Connection::Connection(int serverSocket) {
         std::cout << host << " connected on " << ntohs(client_address.sin_port)
                   << std::endl;
     }
+    setClientAddress(host);
 }
 
 int *Connection::getClientSocket() {
     return &this->clientSocket;
+}
+
+std::string Connection::getClientAddress() {
+    return this->clientAddress;
+}
+
+void Connection::setClientAddress(std::string client_address) {
+    this->clientAddress = client_address;
 }

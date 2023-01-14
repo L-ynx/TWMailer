@@ -24,23 +24,19 @@ void CommandHandler::createDirectory(std::string directory) {
 
 void CommandHandler::parseInput(std::string input) {
     input = readCommand(input);
-    if (userLoggedIn) {
-        if (this->command == "SEND") {
-            saveMessage(input);
-        } else if (this->command == "LIST") {
-            listMessages(input);
-        } else if (this->command == "READ") {
-            readMessage(input);
-        } else if (this->command == "DEL") {
-            deleteMessage(input);
-        }
+    input = readSender(input);
+    if (this->command == "SEND") {
+        saveMessage(input);
+    } else if (this->command == "LIST") {
+        listMessages(input);
+    } else if (this->command == "READ") {
+        readMessage(input);
+    } else if (this->command == "DEL") {
+        deleteMessage(input);
+    } else if (this->command == "LOGIN") {
+        attemptLogin(input);
     } else {
-        input = readSender(input);
-        if (this->command == "LOGIN") {
-            attemptLogin(input);
-        } else {
-            setResponse("ERR");
-        }
+        setResponse("ERR");
     }
 }
 
@@ -118,7 +114,6 @@ void CommandHandler::attemptLogin(std::string input) {
             return;
         }
         ldap_unbind_ext_s(ldapHandle, NULL, NULL);
-        this->userLoggedIn = true;
 
         setResponse("OK");
     }

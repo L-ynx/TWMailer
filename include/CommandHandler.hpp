@@ -12,7 +12,6 @@ class CommandHandler {
     std::string response;
     int responseLength;
 
-    bool userLoggedIn;
     int failedAttempts = 0;
 
     std::unordered_map<std::string, int> blacklist;

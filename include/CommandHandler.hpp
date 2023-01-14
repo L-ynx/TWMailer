@@ -1,5 +1,6 @@
 #ifndef COMMANDHANDLER_H_
 #define COMMANDHANDLER_H_
+#include <mutex>
 #include <string>
 #include <unordered_map>
 
@@ -20,6 +21,9 @@ class CommandHandler {
     std::string sender;
     std::string senderIP;
     std::string messageNumber;
+
+    // https://stackoverflow.com/a/5429695
+    std::mutex _mutex;
 
   public:
     CommandHandler(std::string directory);

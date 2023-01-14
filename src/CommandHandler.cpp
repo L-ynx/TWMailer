@@ -4,6 +4,7 @@
 #include <fstream>
 #include <iostream>
 #include <ldap.h>
+#include <mutex>
 #include <sstream>
 #include <string>
 
@@ -208,6 +209,7 @@ void CommandHandler::readMessage(std::string input) {
 }
 
 void CommandHandler::deleteMessage(std::string input) {
+    std::lock_guard<std::mutex> guard(this->_mutex);
     input = readMessageNumber(input);
     std::stringstream istringstream(input);
 
@@ -276,6 +278,7 @@ int CommandHandler::numberOfFiles(std::string directory) {
 }
 
 int CommandHandler::nextFreeFileNumber(std::string directory) {
+    std::lock_guard<std::mutex> guard(this->_mutex);
     std::filesystem::directory_entry entry;
     int i = 0;
     while (true) {
@@ -317,6 +320,7 @@ void CommandHandler::blacklistSender() {
 }
 
 void CommandHandler::readBlacklist() {
+    std::lock_guard<std::mutex> guard(this->_mutex);
     std::string file = "blacklist";
 
     if (!std::filesystem::exists(std::filesystem::directory_entry(file))) {
@@ -346,6 +350,7 @@ void CommandHandler::readBlacklist() {
 }
 
 void CommandHandler::saveBlacklist() {
+    std::lock_guard<std::mutex> guard(this->_mutex);
     std::string file = "blacklist";
 
     std::ofstream of{file};

@@ -48,9 +48,6 @@ void Server::clientCommunication(Connection *conn) {
         // data
         ch->parseInput(std::string(buffer, 0, message));
 
-        // std::cout << ch->getResponse().c_str() << std::endl;
-        // std::cout << ch->getResponseLength() << std::endl;
-
         // send the response to the client
         send(*conn->getClientSocket(), ch->getResponse().c_str(),
              ch->getResponseLength(), 0);

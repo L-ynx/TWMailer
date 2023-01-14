@@ -45,13 +45,14 @@ void CommandHandler::parseInput(std::string input) {
 }
 
 void CommandHandler::attemptLogin(std::string input) {
-  /* The logic here may seem confusing at first glance, but it's fairly simple:
-     if the user has failed to log in enough times, they will be blacklisted. We
-     need to check this with each new attempt because we don't want to bother with
-     any of the rest of the code in this method if they haven't waited long enough.
-     If they have actually waited long enough, we want to disable the failure check
-     and try to log them in (so that they can fail again if they want).
-  */
+    /* The logic here may seem confusing at first glance, but it's fairly
+          simple: the user has failed to log in enough times, they will be
+          blacklisted. We need to check this with each new attempt because we
+          don't want to bother with any of the rest of the code in this method
+          if they haven't waited long enough.  If they have actually waited long
+          enough, we want to disable the failure check and try to log them in
+          (so that they can fail again if they want).
+    */
     if (this->failedAttempts >= ATTEMPT_LIMIT) {
         if (!isBlacklisted()) {
             this->failedAttempts = 0;

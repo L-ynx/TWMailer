@@ -45,62 +45,82 @@ void CommandHandler::parseInput(std::string input) {
 }
 
 void CommandHandler::attemptLogin(std::string input) {
-    // LDAP config
-    // anonymous bind with user and pw empty
-    const char *ldapUri = "ldap://ldap.technikum-wien.at:389";
-    const int ldapVersion = LDAP_VERSION3;
-    int rc = 0; // return code
-    std::string password = trimPW(input);
-    std::string username =
-        "uid=" + this->sender + ",ou=people,dc=technikum-wien,dc=at";
+  /* The logic here may seem confusing at first glance, but it's fairly simple:
+     if the user has failed to log in enough times, they will be blacklisted. We
+     need to check this with each new attempt because we don't want to bother with
+     any of the rest of the code in this method if they haven't waited long enough.
+     If they have actually waited long enough, we want to disable the failure check
+     and try to log them in (so that they can fail again if they want).
+  */
+    if (this->failedAttempts >= ATTEMPT_LIMIT) {
+        if (!isBlacklisted()) {
+            this->failedAttempts = 0;
+            this->attemptLogin(input);
+        } else {
+            setResponse("Too many incorrect login attempts.\nTry again later.");
+        }
+    } else {
+        // LDAP config
+        // anonymous bind with user and pw empty
+        const char *ldapUri = "ldap://ldap.technikum-wien.at:389";
+        const int ldapVersion = LDAP_VERSION3;
+        int rc = 0; // return code
+        std::string password = trimPW(input);
+        std::string username =
+            "uid=" + this->sender + ",ou=people,dc=technikum-wien,dc=at";
 
-    // setup LDAP connection
-    LDAP *ldapHandle;
-    rc = ldap_initialize(&ldapHandle, ldapUri);
+        // setup LDAP connection
+        LDAP *ldapHandle;
+        rc = ldap_initialize(&ldapHandle, ldapUri);
 
-    if (rc != LDAP_SUCCESS) {
-        fprintf(stderr, "ldap_init failed\n");
-        setResponse("ERR");
-        return;
-    }
+        if (rc != LDAP_SUCCESS) {
+            fprintf(stderr, "ldap_init failed\n");
+            setResponse("ERR");
+            return;
+        }
 
-    // set verison options
-    rc = ldap_set_option(ldapHandle,
-                         LDAP_OPT_PROTOCOL_VERSION, // OPTION
-                         &ldapVersion);             // IN-Value
-    if (rc != LDAP_OPT_SUCCESS) {
-        fprintf(stderr, "ldap_set_option(PROTOCOL_VERSION): %s\n",
-                ldap_err2string(rc));
+        // set version options
+        rc = ldap_set_option(ldapHandle,
+                             LDAP_OPT_PROTOCOL_VERSION, // OPTION
+                             &ldapVersion);             // IN-Value
+        if (rc != LDAP_OPT_SUCCESS) {
+            fprintf(stderr, "ldap_set_option(PROTOCOL_VERSION): %s\n",
+                    ldap_err2string(rc));
+            ldap_unbind_ext_s(ldapHandle, NULL, NULL);
+            setResponse("ERR");
+            return;
+        }
+
+        // initialize TLS
+        rc = ldap_start_tls_s(ldapHandle, NULL, NULL);
+        if (rc != LDAP_SUCCESS) {
+            fprintf(stderr, "ldap_start_tls_s(): %s\n", ldap_err2string(rc));
+            ldap_unbind_ext_s(ldapHandle, NULL, NULL);
+            setResponse("ERR");
+            return;
+        }
+
+        // bind credentials
+        BerValue bindCredentials;
+        bindCredentials.bv_val = (char *)password.c_str();
+        bindCredentials.bv_len = strlen(password.c_str());
+        BerValue *servercredp; // server's credentials
+        rc = ldap_sasl_bind_s(ldapHandle, username.c_str(), LDAP_SASL_SIMPLE,
+                              &bindCredentials, NULL, NULL, &servercredp);
+        if (rc != LDAP_SUCCESS) {
+            fprintf(stderr, "LDAP bind error: %s\n", ldap_err2string(rc));
+            ldap_unbind_ext_s(ldapHandle, NULL, NULL);
+            setResponse("ERR");
+            if (++this->failedAttempts >= this->ATTEMPT_LIMIT) {
+                blacklistSender();
+            }
+            return;
+        }
         ldap_unbind_ext_s(ldapHandle, NULL, NULL);
-        setResponse("ERR");
-        return;
-    }
+        this->userLoggedIn = true;
 
-    // initialize TLS
-    rc = ldap_start_tls_s(ldapHandle, NULL, NULL);
-    if (rc != LDAP_SUCCESS) {
-        fprintf(stderr, "ldap_start_tls_s(): %s\n", ldap_err2string(rc));
-        ldap_unbind_ext_s(ldapHandle, NULL, NULL);
-        setResponse("ERR");
-        return;
+        setResponse("OK");
     }
-
-    // bind credentials
-    BerValue bindCredentials;
-    bindCredentials.bv_val = (char *)password.c_str();
-    bindCredentials.bv_len = strlen(password.c_str());
-    BerValue *servercredp; // server's credentials
-    rc = ldap_sasl_bind_s(ldapHandle, username.c_str(), LDAP_SASL_SIMPLE,
-                          &bindCredentials, NULL, NULL, &servercredp);
-    if (rc != LDAP_SUCCESS) {
-        fprintf(stderr, "LDAP bind error: %s\n", ldap_err2string(rc));
-        ldap_unbind_ext_s(ldapHandle, NULL, NULL);
-        setResponse("ERR");
-        return;
-    }
-    ldap_unbind_ext_s(ldapHandle, NULL, NULL);
-
-    setResponse("OK");
 }
 
 void CommandHandler::saveMessage(std::string input) {
@@ -282,4 +302,24 @@ std::string CommandHandler::getResponse() {
 }
 int CommandHandler::getResponseLength() {
     return this->responseLength;
+}
+
+// Returns true if the user was blacklisted less than 60 seconds ago.
+bool CommandHandler::isBlacklisted() {
+    readBlacklist();
+    return (this->blacklist[this->senderIP] > (int)time(0) - this->DELAY);
+}
+
+void CommandHandler::blacklistSender() {
+    readBlacklist();
+    this->blacklist[this->senderIP] = (int)time(0);
+    saveBlacklist();
+}
+
+void CommandHandler::readBlacklist() {
+    // read file and turn it into a map
+}
+
+void CommandHandler::saveBlacklist() {
+    // save file
 }

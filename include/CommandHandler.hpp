@@ -1,12 +1,21 @@
 #ifndef COMMANDHANDLER_H_
 #define COMMANDHANDLER_H_
 #include <string>
+#include <unordered_map>
 
 class CommandHandler {
   private:
+    static const int DELAY = 60;
+    static const int ATTEMPT_LIMIT = 3;
+
     std::string maildir;
     std::string response;
     int responseLength;
+
+    bool userLoggedIn;
+    int failedAttempts = 0;
+
+    std::unordered_map<std::string, int> blacklist;
 
     std::string command;
     std::string sender;
@@ -39,6 +48,11 @@ class CommandHandler {
     void setResponse(std::string message);
     std::string getResponse();
     int getResponseLength();
+
+    void blacklistSender();
+    bool isBlacklisted();
+    void readBlacklist();
+    void saveBlacklist();
 };
 
 #endif // COMMANDHANDLER_H_

@@ -29,6 +29,7 @@ ServerSocket *Server::getSocket() {
 void Server::clientCommunication(Connection *conn) {
     char buffer[4096];
     int message;
+    ch->setSenderIP(conn->getClientAddress());
 
     do {
         memset(buffer, 0, 4096);

@@ -24,18 +24,23 @@ void CommandHandler::createDirectory(std::string directory) {
 
 void CommandHandler::parseInput(std::string input) {
     input = readCommand(input);
-    input = readSender(input);
-
-    if (this->command == "SEND") {
-        saveMessage(input);
-    } else if (this->command == "LIST") {
-        listMessages(input);
-    } else if (this->command == "READ") {
-        readMessage(input);
-    } else if (this->command == "DEL") {
-        deleteMessage(input);
-    } else if (this->command == "LOGIN") {
-        attemptLogin(input);
+    if (userLoggedIn) {
+        if (this->command == "SEND") {
+            saveMessage(input);
+        } else if (this->command == "LIST") {
+            listMessages(input);
+        } else if (this->command == "READ") {
+            readMessage(input);
+        } else if (this->command == "DEL") {
+            deleteMessage(input);
+        }
+    } else {
+        input = readSender(input);
+        if (this->command == "LOGIN") {
+            attemptLogin(input);
+        } else {
+            setResponse("ERR");
+        }
     }
 }
 

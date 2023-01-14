@@ -168,7 +168,11 @@ void CommandHandler::listMessages(std::string input) {
             std::string receiver, subject;
             getline(is, receiver);
             getline(is, subject);
-            response += subject + "\n";
+            // this line is not strictly the same as the specification, but it
+            // makes the user's life easier to see what the filename is when
+            // they list their messages. This way they know what number they
+            // need to use in order to read it later.
+            response += file.path().filename().string() + ": " + subject + "\n";
             is.close();
         }
     }
@@ -265,7 +269,7 @@ int CommandHandler::numberOfFiles(std::string directory) {
     int counter = 0;
     std::filesystem::path path = directory;
     for (auto &file : std::filesystem::directory_iterator(path)) {
-        std::cout << file.path() << '\n';
+        std::cout << "[DEBUG INFO] " << file.path() << '\n';
         counter++;
     }
     return counter;
@@ -336,7 +340,7 @@ void CommandHandler::readBlacklist() {
             }
         }
         for (const auto &[key, value] : this->blacklist) {
-            std::cout << key << " has value " << value << std::endl;
+            std::cout << key << " blacklisted at " << value << std::endl;
         }
     }
 }

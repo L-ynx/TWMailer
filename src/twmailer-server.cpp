@@ -18,10 +18,6 @@ void Server::connect(Connection *client) {
     connection.push_back(client);
 }
 
-/*Connection *Server::getConnection() {
-    return this->connection;
-}*/
-
 ServerSocket *Server::getSocket() {
     return this->serverSocket;
 }
@@ -60,37 +56,7 @@ void Server::clientCommunication(Connection *conn) {
 
     } while (strcasecmp(buffer, "QUIT") != 0 && !this->abortRequested &&
              message != 0);
-    // close(*conn->getClientSocket());
 }
-
-/*void Server::signalHandler(int sig) {
-    if (sig == SIGINT) {
-        std::cout << "abort Requested... ";
-        this->abortRequested = 1;
-
-        if (*conn->getClientSocket() != -1) {
-            if (shutdown(*conn->getClientSocket(), SHUT_RDWR) == -1) {
-                perror("shutdown *conn->getClientSocket()");
-            }
-            if (close(*conn->getClientSocket()) == -1) {
-                perror("close *conn->getClientSocket()");
-            }
-            *conn->getClientSocket() = -1;
-        }
-
-        if (*this->serverSocket->getSocket() != -1) {
-            if (shutdown(*this->serverSocket->getSocket(), SHUT_RDWR) == -1) {
-                perror("shutdown *this->serverSocket->getSocket()");
-            }
-            if (close(*this->serverSocket->getSocket()) == -1) {
-                perror("close *this->serverSocket->getSocket()");
-            }
-            *this->serverSocket->getSocket() = -1;
-        }
-    } else {
-        exit(sig);
-    }
-}*/
 
 int main(int argc, char *argv[]) {
     if (argc != 3) {

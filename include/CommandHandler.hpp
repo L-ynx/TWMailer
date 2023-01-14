@@ -10,6 +10,7 @@ class CommandHandler {
 
     std::string command;
     std::string sender;
+    std::string senderIP;
     std::string messageNumber;
 
   public:
@@ -34,6 +35,7 @@ class CommandHandler {
     int numberOfFiles(std::string directory);
     int nextFreeFileNumber(std::string directory);
 
+    void setSenderIP(std::string ip);
     void setResponse(std::string message);
     std::string getResponse();
     int getResponseLength();

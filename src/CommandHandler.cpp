@@ -263,6 +263,10 @@ int CommandHandler::nextFreeFileNumber(std::string directory) {
     }
 }
 
+void CommandHandler::setSenderIP(std::string ip) {
+    this->senderIP = ip;
+}
+
 void CommandHandler::setResponse(std::string message) {
     this->response = message.data();
     this->responseLength = message.length();

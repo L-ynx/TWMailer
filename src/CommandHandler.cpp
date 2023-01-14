@@ -317,9 +317,47 @@ void CommandHandler::blacklistSender() {
 }
 
 void CommandHandler::readBlacklist() {
-    // read file and turn it into a map
+    std::string file = "blacklist";
+
+    if (!std::filesystem::exists(std::filesystem::directory_entry(file))) {
+        return;
+    } else {
+        std::ifstream inf{file};
+
+        while (inf) {
+            std::string inputLine;
+            std::getline(inf, inputLine);
+
+            if (inputLine != "") {
+                std::istringstream iss(inputLine);
+                std::string address;
+                std::string timeString;
+                int time;
+                iss >> address;
+                iss >> timeString;
+                time = atoi(timeString.c_str());
+                blacklist[address] = time;
+            }
+        }
+        for (const auto &[key, value] : this->blacklist) {
+            std::cout << key << " has value " << value << std::endl;
+        }
+    }
 }
 
 void CommandHandler::saveBlacklist() {
-    // save file
+    std::string file = "blacklist";
+
+    std::ofstream of{file};
+    if (!of) {
+        setResponse("ERR\n");
+        return;
+    }
+
+    for (const auto &[key, value] : this->blacklist) {
+        std::cout << key << " blacklisted at " << value << std::endl;
+        of << key << ' ' << value << '\n';
+    }
+
+    of.close();
 }
